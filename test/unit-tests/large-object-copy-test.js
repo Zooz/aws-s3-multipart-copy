@@ -98,37 +98,96 @@ describe('AWS S3 multupart copy client unit tests', function () {
     describe('Testing copyLargeObject', function () {
         before(() => {
             s3 = new AWS.S3();
+            s3LargeCopyClient.init(s3, logger);
+            loggerInfoSpy.reset();
             createMultipartUploadStub = sandBox.stub(s3, 'createMultipartUpload');
             uploadPartCopyStub = sandBox.stub(s3, 'uploadPartCopy');
             completeMultipartUploadStub = sandBox.stub(s3, 'completeMultipartUpload');
             abortMultipartUploadStub = sandBox.stub(s3, 'abortMultipartUpload');
         });
 
-        it.skip('Should succeed with mandatory variables passed', function () {
-            createMultipartUploadStub.resolves({ UploadId: '1a2b3c4d' });
-            uploadPartCopyStub.resolves({
-                CopyPartResult: {
-                    LastModified: 'LastModified',
-                    ETag: '1a1b2s3d2f1e2g3sfsgdsg'
+        it('Should succeed with mandatory variables passed', function () {
+            createMultipartUploadStub.returns({
+                promise: function () {
+                    return Promise.resolve({ UploadId: '1a2b3c4d' })
                 }
             });
-            completeMultipartUploadStub.resolves();
+            uploadPartCopyStub.returns({
+                promise: function () {
+                    return Promise.resolve({
+                        CopyPartResult: {
+                            LastModified: 'LastModified',
+                            ETag: '1a1b2s3d2f1e2g3sfsgdsg'
+                        }
+                    })
+                }
+            });
+            completeMultipartUploadStub.returns({
+                promise: function () {
+                    return Promise.resolve();
+                }
+            });
 
             let options = {
                 source_bucket: 'source_bucket',
                 object_key: 'object_key',
                 destination_bucket: 'destination_bucket',
                 copied_object_name: 'copied_object_name',
-                object_size: 1700000000,
+                object_size: 70000000,
                 copy_part_size_bytes: 50000000,
                 copied_object_permissions: 'copied_object_permissions',
                 expiration_period: 100000
             }
             let request_context = 'request_context';
+            let expected_createMultipartUpload_args = {
+                Bucket: 'destination_bucket',
+                Key: 'copied_object_name',
+                ACL: 'copied_object_permissions',
+                Expires: 100000
+            }
+            let expected_uploadPartCopy_firstCallArgs = {
+                Bucket: 'destination_bucket',
+                CopySource: 'source_bucket/object_key',
+                CopySourceRange: 'bytes=0-49999999',
+                Key: 'copied_object_name',
+                PartNumber: 1,
+                UploadId: '1a2b3c4d'
+            }
+            let expected_uploadPartCopy_secondCallArgs = {
+                Bucket: 'destination_bucket',
+                CopySource: 'source_bucket/object_key',
+                CopySourceRange: 'bytes=50000000-69999999',
+                Key: 'copied_object_name',
+                PartNumber: 2,
+                UploadId: '1a2b3c4d'
+            }
+            let expected_completeMultipartUploadStub_args = {
+                Bucket: 'destination_bucket',
+                Key: 'copied_object_name',
+                MultipartUpload: {
+                    Parts: [
+                        {
+                            ETag: '1a1b2s3d2f1e2g3sfsgdsg',
+                            PartNumber: 1
+                        }, {
+                            ETag: '1a1b2s3d2f1e2g3sfsgdsg',
+                            PartNumber: 2
+                        }]
+                },
+                UploadId: '1a2b3c4d'
+            }
 
             return s3LargeCopyClient.copyLargeObject(options, request_context)
                 .then(() => {
-
+                    should(loggerInfoSpy.callCount).equal(5)
+                    should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
+                    should(createMultipartUploadStub.calledOnce).equal(true);
+                    should(createMultipartUploadStub.args[0][0]).eql(expected_createMultipartUpload_args);
+                    should(uploadPartCopyStub.calledTwice).equal(true);
+                    should(uploadPartCopyStub.args[0][0]).eql(expected_uploadPartCopy_firstCallArgs);
+                    should(uploadPartCopyStub.args[1][0]).eql(expected_uploadPartCopy_secondCallArgs);
+                    should(completeMultipartUploadStub.calledOnce).equal(true);
+                    should(completeMultipartUploadStub.args[0][0]).eql(expected_completeMultipartUploadStub_args);
                 })
         });
 
