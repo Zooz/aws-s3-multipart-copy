@@ -1,26 +1,27 @@
 'use strict';
 
+var AWS = require('aws-sdk');
+
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
 let s3, logger;
 
-var init = async function (aws_s3_object, initialized_logger) {
+var init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
-    try {
-        let s3Response = await s3.listBuckets().promise();
-        logger.info({ msg: 'S3 client is valid' })
-
-        return Promise.resolve();
-    } catch (err) {
-        let error = new Error('Failed to initiate s3 connection');
-        error.details = 'Logger and\or S3 instance are invalid'
-        error.err = err;
-
-        return Promise.reject(error);
+    if (!s3 || !(s3 instanceof AWS.S3)) {
+        throw new Error('Invalid AWS.S3 object recieved');
+    } else {
+        try {
+            logger.info({ msg: 'S3 client initialized successfuly' });
+        } catch (err) {
+            throw new Error('Invalid logger object recieved');
+        }
     }
+
+    return;
 };
 
 var copyLargeObject = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
@@ -91,7 +92,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
         UploadId: upload_id
     };
 
-    return s3.abortMultipartCopy(params).promise()
+    return s3.abortMultipartUpload(params).promise()
         .then((result) => {
             logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(result), context: request_context });
             return Promise.resolve(result);
@@ -136,7 +137,7 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
     }
 
     if (remainder !== 0) {
-        partition = (index * copy_part_size) + '-' + (index * copy_part_size + remainder);
+        partition = (index * copy_part_size) + '-' + (index * copy_part_size + remainder - 1);
         partitions.push(partition);
     }
 
@@ -144,19 +145,13 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
 };
 
 function prepareResultsForCopyCompletion(copy_parts_results_array) {
-    copy_parts_results_array.forEach((copy_part, index) => {
-        copy_part = copy_part.CopyPartResult;
-        copy_part.LastModified ? delete copy_part.LastModified : null;
-        copy_part.PartNumber = index + 1;
-    });
+    for (let index = 0; index < copy_parts_results_array.length; index++) {
+        copy_parts_results_array[index] = copy_parts_results_array[index].CopyPartResult
+        copy_parts_results_array[index].LastModified ? delete copy_parts_results_array[index].LastModified : null;
+        copy_parts_results_array[index].PartNumber = index + 1;
+    }
 
     return;
-
-    // for (let index = 0; index < copy_parts_results_array.length; index++) {
-    //     copy_parts_results_array[index] = copy_parts_results_array[index].CopyPartResult
-    //     copy_parts_results_array[index].LastModified ? delete copy_parts_results_array[index].LastModified : null;
-    //     copy_parts_results_array[index].PartNumber = index + 1;
-    // }
 };
 
 module.exports = {
