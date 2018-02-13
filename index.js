@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./src/large-object-copy')
+module.exports = require('./src/copy-object-multipart')

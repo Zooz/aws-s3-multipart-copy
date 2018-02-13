@@ -5,7 +5,7 @@ let bunyan = require('bunyan'),
     should = require('should'),
     deepCopy = require('deepcopy'),
     rewire = require('rewire'),
-    s3LargeCopyClient = rewire('../../src/large-object-copy'),
+    s3LargeCopyClient = rewire('../../src/copy-object-multipart'),
     AWS = require('aws-sdk'),
     pkginfo = require('pkginfo')(module, 'version'),
     testData = require('../utils/unit-tests-data'),
@@ -18,7 +18,7 @@ let bunyan = require('bunyan'),
         serializers: { err: bunyan.stdSerializers.err }
     });
 
-let sandBox, loggerInfoSpy, loggerErrorSpy, createMultipartUploadStub, uploadPartCopyStub, completeMultipartUploadStub, abortMultipartUploadStub, s3;
+let sandBox, loggerInfoSpy, loggerErrorSpy, createMultipartUploadStub, uploadPartCopyStub, completeMultipartUploadStub, abortMultipartUploadStub, listPartsStub, s3;
 
 describe('AWS S3 multupart copy client unit tests', function () {
     before(() => {
@@ -42,13 +42,13 @@ describe('AWS S3 multupart copy client unit tests', function () {
             s3LargeCopyClient.init(s3, logger);
 
             should(loggerInfoSpy.calledOnce).equal(true);
-            should(loggerInfoSpy.args[0][0]).eql({ msg: 'S3 client initialized successfuly' });
+            should(loggerInfoSpy.args[0][0]).eql({ msg: 'S3 client initialized successfully' });
             should(s3LargeCopyClient.__get__('s3')).equal(s3);
         });
 
         it('Should throw error when given an invalid s3 object', function () {
             let notS3 = [];
-            let expected_error = new Error('Invalid AWS.S3 object recieved');
+            let expected_error = new Error('Invalid AWS.S3 object received');
 
             try {
                 s3LargeCopyClient.init(notS3, logger);
@@ -59,7 +59,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
         });
 
         it('Should throw error when s3 object is not passed', function () {
-            let expected_error = new Error('Invalid AWS.S3 object recieved');
+            let expected_error = new Error('Invalid AWS.S3 object received');
 
             try {
                 s3LargeCopyClient.init(undefined, logger);
@@ -72,7 +72,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
         it('Should throw error when given an invalid logger object', function () {
             let notLogger = [];
             let s3 = new AWS.S3();
-            let expected_error = new Error('Invalid logger object recieved');
+            let expected_error = new Error('Invalid logger object received');
 
             try {
                 s3LargeCopyClient.init(s3, notLogger);
@@ -84,7 +84,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
 
         it('Should throw error when logger object is not passed', function () {
             s3 = new AWS.S3();
-            let expected_error = new Error('Invalid logger object recieved');
+            let expected_error = new Error('Invalid logger object received');
 
             try {
                 s3LargeCopyClient.init(s3, undefined);
@@ -95,7 +95,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
         });
     });
 
-    describe('Testing copyLargeObject', function () {
+    describe('Testing copyObjectMultipart', function () {
         before(() => {
             s3 = new AWS.S3();
             s3LargeCopyClient.init(s3, logger);
@@ -104,6 +104,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             uploadPartCopyStub = sandBox.stub(s3, 'uploadPartCopy');
             completeMultipartUploadStub = sandBox.stub(s3, 'completeMultipartUpload');
             abortMultipartUploadStub = sandBox.stub(s3, 'abortMultipartUpload');
+            listPartsStub = sandBox.stub(s3, 'listParts');
         });
 
         it('Should succeed with all variables passed', function () {
@@ -111,7 +112,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
@@ -139,7 +140,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 ACL: 'private'
             }
 
-            return s3LargeCopyClient.copyLargeObject(testData.partial_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.partial_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
@@ -158,24 +159,30 @@ describe('AWS S3 multupart copy client unit tests', function () {
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+            let full_request_options = deepCopy(testData.full_request_options);
+            full_request_options.object_size = 25000000;
+            let expected_uploadPartCopy_firstCallArgs = deepCopy(testData.expected_uploadPartCopy_firstCallArgs);
+            expected_uploadPartCopy_firstCallArgs.CopySourceRange = 'bytes=0-24999999';
+            let expected_completeMultipartUploadStub_args = deepCopy(testData.expected_completeMultipartUploadStub_args);
+            expected_completeMultipartUploadStub_args.MultipartUpload.Parts = [{ ETag: '1a1b2s3d2f1e2g3sfsgdsg', PartNumber: 1 }]
+
+            return s3LargeCopyClient.copyObjectMultipart(full_request_options, testData.request_context)
                 .then(() => {
-                    should(loggerInfoSpy.callCount).equal(5)
+                    should(loggerInfoSpy.callCount).equal(4)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
                     should(createMultipartUploadStub.calledOnce).equal(true);
                     should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
-                    should(uploadPartCopyStub.calledTwice).equal(true);
-                    should(uploadPartCopyStub.args[0][0]).eql(testData.expected_uploadPartCopy_firstCallArgs);
-                    should(uploadPartCopyStub.args[1][0]).eql(testData.expected_uploadPartCopy_secondCallArgs);
+                    should(uploadPartCopyStub.calledOnce).equal(true);
+                    should(uploadPartCopyStub.args[0][0]).eql(expected_uploadPartCopy_firstCallArgs);
                     should(completeMultipartUploadStub.calledOnce).equal(true);
-                    should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
+                    should(completeMultipartUploadStub.args[0][0]).eql(expected_completeMultipartUploadStub_args);
                 })
         });
 
         it('Should fail due to createMultipartUpload error and not call abortMultipartCopy', function () {
-            createMultipartUploadStub.returns(testData.all_stubs_negative_response);
+            createMultipartUploadStub.returns(testData.all_stubs_error_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.partial_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.partial_request_options, testData.request_context)
                 .then(() => {
                     throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
                 })
@@ -186,15 +193,16 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should call abortMultipartCopy upon error from uploadPartCopy error and ', function () {
+        it('Should call abortMultipartCopy upon error from uploadPartCopy error and succeed', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
-            uploadPartCopyStub.returns(testData.all_stubs_negative_response);
+            uploadPartCopyStub.returns(testData.all_stubs_error_response);
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
+            listPartsStub.returns(testData.listPartsStub_positive_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(2)
-                    should(loggerInfoSpy.args[1][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({}), context: 'request_context' });
+                    should(loggerInfoSpy.args[1][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({ Parts: [] }), context: 'request_context' });
                     should(loggerErrorSpy.calledTwice).equal(true);
                     should(loggerErrorSpy.args[0][0]).eql('CopyPart 1 Failed: "test_error"');
                     should(loggerErrorSpy.args[1][0]).eql('CopyPart 2 Failed: "test_error"');
@@ -205,19 +213,22 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(uploadPartCopyStub.args[1][0]).eql(testData.expected_uploadPartCopy_secondCallArgs);
                     should(abortMultipartUploadStub.calledOnce).equal(true);
                     should(abortMultipartUploadStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                    should(listPartsStub.calledOnce).equal(true);
+                    should(listPartsStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
                 })
         });
 
         it('Should call abortMultipartCopy upon error from completeMultipartUpload', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
-            completeMultipartUploadStub.returns(testData.all_stubs_negative_response);
+            completeMultipartUploadStub.returns(testData.all_stubs_error_response);
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
+            listPartsStub.returns(testData.listPartsStub_positive_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
-                    should(loggerInfoSpy.args[4][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({}), context: 'request_context' });
+                    should(loggerInfoSpy.args[4][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({ Parts: [] }), context: 'request_context' });
                     should(loggerErrorSpy.calledOnce).equal(true);
                     should(loggerErrorSpy.args[0][0]).eql({ msg: 'Multipart upload failed', context: 'request_context', error: 'test_error' });
                     should(createMultipartUploadStub.calledOnce).equal(true);
@@ -229,16 +240,87 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
                     should(abortMultipartUploadStub.calledOnce).equal(true);
                     should(abortMultipartUploadStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                    should(listPartsStub.calledOnce).equal(true);
+                    should(listPartsStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                })
+        });
+
+        it('Should call abortMultipartCopy upon error from completeMultipartUpload and a list of parts returned from listParts', function () {
+            createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
+            uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
+            completeMultipartUploadStub.returns(testData.all_stubs_error_response);
+            abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
+            listPartsStub.returns(testData.listPartsStub_negative_response);
+
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+                .then(() => {
+                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                })
+                .catch((err) => {
+                    should(loggerInfoSpy.callCount).equal(4)
+                    should(loggerInfoSpy.args[3][0]).eql({
+                        msg: 'copied all parts successfully: ' +
+                        [testData.uploadPartCopyStub_positive_response, testData.uploadPartCopyStub_positive_response].toString(),
+                        context: 'request_context'
+                    });
+                    should(loggerErrorSpy.calledTwice).equal(true);
+                    should(loggerErrorSpy.args[0][0]).eql({ msg: 'Multipart upload failed', context: 'request_context', error: 'test_error' });
+                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed', context: 'request_context', error: { Parts: ['part 1', 'part 2'] } });
+                    should(createMultipartUploadStub.calledOnce).equal(true);
+                    should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
+                    should(uploadPartCopyStub.calledTwice).equal(true);
+                    should(uploadPartCopyStub.args[0][0]).eql(testData.expected_uploadPartCopy_firstCallArgs);
+                    should(uploadPartCopyStub.args[1][0]).eql(testData.expected_uploadPartCopy_secondCallArgs);
+                    should(completeMultipartUploadStub.calledOnce).equal(true);
+                    should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
+                    should(abortMultipartUploadStub.calledOnce).equal(true);
+                    should(abortMultipartUploadStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                    should(listPartsStub.calledOnce).equal(true);
+                    should(listPartsStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                    should(err).eql({ Parts: ['part 1', 'part 2'] });
                 })
         });
 
         it('Should call abortMultipartCopy upon error from uploadPartCopy and fail due to abortMultipartCopy error', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
-            completeMultipartUploadStub.returns(testData.all_stubs_negative_response);
-            abortMultipartUploadStub.returns(testData.all_stubs_negative_response);
+            completeMultipartUploadStub.returns(testData.all_stubs_error_response);
+            abortMultipartUploadStub.returns(testData.all_stubs_error_response);
 
-            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+                .then(() => {
+                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                })
+                .catch((err) => {
+                    should(loggerInfoSpy.callCount).equal(4)
+                    should(loggerInfoSpy.args[3][0]).eql({
+                        msg: 'copied all parts successfully: ' +
+                        [testData.uploadPartCopyStub_positive_response, testData.uploadPartCopyStub_positive_response].toString(),
+                        context: 'request_context'
+                    });
+                    should(loggerErrorSpy.calledTwice).equal(true);
+                    should(loggerErrorSpy.args[0][0]).eql({ msg: 'Multipart upload failed', context: 'request_context', error: 'test_error' });
+                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed', context: 'request_context', error: 'test_error' });
+                    should(createMultipartUploadStub.calledOnce).equal(true);
+                    should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
+                    should(uploadPartCopyStub.calledTwice).equal(true);
+                    should(uploadPartCopyStub.args[0][0]).eql(testData.expected_uploadPartCopy_firstCallArgs);
+                    should(uploadPartCopyStub.args[1][0]).eql(testData.expected_uploadPartCopy_secondCallArgs);
+                    should(completeMultipartUploadStub.calledOnce).equal(true);
+                    should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
+                    should(abortMultipartUploadStub.calledOnce).equal(true);
+                    should(abortMultipartUploadStub.args[0][0]).eql(testData.expected_abortMultipartUploadStub_args);
+                    should(err).equal('test_error');
+                })
+        });
+
+        it('Should call abortMultipartCopy upon error from uploadPartCopy and fail due to listParts error', function () {
+            createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
+            uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
+            completeMultipartUploadStub.returns(testData.all_stubs_error_response);
+            abortMultipartUploadStub.returns(testData.all_stubs_error_response);
+
+            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
                 })

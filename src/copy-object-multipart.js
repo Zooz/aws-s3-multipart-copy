@@ -12,16 +12,15 @@ let init = function (aws_s3_object, initialized_logger) {
     logger = initialized_logger;
 
     if (!s3 || !(s3 instanceof AWS.S3)) {
-        throw new Error('Invalid AWS.S3 object recieved');
+        throw new Error('Invalid AWS.S3 object received');
     } else {
-        try {
-            logger.info({ msg: 'S3 client initialized successfuly' });
-        } catch (err) {
-            throw new Error('Invalid logger object recieved');
+        if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
+            logger.info({ msg: 'S3 client initialized successfully' });
+            return;
+        } else {
+            throw new Error('Invalid logger object received');
         }
-    }
-
-    return;
+    };
 };
 
 /**
@@ -30,7 +29,7 @@ let init = function (aws_s3_object, initialized_logger) {
  * (note that copy_part_size_bytes, copied_object_permissions, expiration_period are optional and will be assigned with default values if not given)
  * @param {*} request_context optional parameter for logging purposes
  */
-let copyLargeObject = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
+let copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
     let upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context);
     let partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
     let copyPartFunctionsArray = [];
@@ -43,8 +42,8 @@ let copyLargeObject = async function ({ source_bucket, object_key, destination_b
         .then((copy_results) => {
             logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context })
 
-            prepareResultsForCopyCompletion(copy_results);
-            return completeMultipartCopy(destination_bucket, copy_results, copied_object_name, upload_id, request_context);
+            let copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
+            return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
         })
         .catch((err) => {
             return abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context);
@@ -100,8 +99,15 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
 
     return s3.abortMultipartUpload(params).promise()
         .then((result) => {
-            logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(result), context: request_context });
-            return Promise.resolve(result);
+            return s3.listParts(params).promise()
+        })
+        .then((parts_list) => {
+            if (parts_list.Parts.length > 0) {
+                return Promise.reject(parts_list);
+            } else {
+                logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(parts_list), context: request_context });
+                return Promise.resolve();
+            }
         })
         .catch((err) => {
             logger.error({ msg: 'abort multipart copy failed', context: request_context, error: err });
@@ -151,16 +157,19 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
 };
 
 function prepareResultsForCopyCompletion(copy_parts_results_array) {
-    for (let index = 0; index < copy_parts_results_array.length; index++) {
-        copy_parts_results_array[index] = copy_parts_results_array[index].CopyPartResult
-        copy_parts_results_array[index].LastModified ? delete copy_parts_results_array[index].LastModified : null;
-        copy_parts_results_array[index].PartNumber = index + 1;
-    }
+    let resultArray = [];
 
-    return;
+    copy_parts_results_array.forEach((copy_part, index) => {
+        let newCopyPart = {};
+        newCopyPart.ETag = copy_part.CopyPartResult.ETag;
+        newCopyPart.PartNumber = index + 1;
+        resultArray.push(newCopyPart);
+    });
+
+    return resultArray;
 };
 
 module.exports = {
     init: init,
-    copyLargeObject: copyLargeObject
+    copyObjectMultipart: copyObjectMultipart
 };

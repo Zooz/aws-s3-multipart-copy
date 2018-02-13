@@ -84,7 +84,7 @@ module.exports = {
             return Promise.resolve();
         }
     },
-    all_stubs_negative_response: {
+    all_stubs_error_response: {
         promise: function () {
             return Promise.reject('test_error');
         }
@@ -92,6 +92,16 @@ module.exports = {
     abortMultipartUploadStub_positive_response: {
         promise: function () {
             return Promise.resolve({});
+        }
+    },
+    listPartsStub_positive_response: {
+        promise: function () {
+            return Promise.resolve({ Parts: [] })
+        }
+    },
+    listPartsStub_negative_response: {
+        promise: function () {
+            return Promise.resolve({ Parts: ['part 1', 'part 2'] })
         }
     }
 }
