@@ -1,24 +1,25 @@
 {
-  "name": "aws-s3-client",
+  "name": "aws-s3-multipart-copy",
   "version": "1.0.0",
   "description": "This node js package provides a simple usage for multipart copying between buckets in aws-s3 via the official aws-sdk. It manages the 3 steps required for multipart copy including byte-range offsetting and parts order.",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha ./test/unit-tests --recursive"
+    "test": "nyc mocha ./test/unit-tests --recursive",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LiadBerko/aws-s3-client.git"
+    "url": "git+https://github.com/LiadBerko/aws-s3-multipart-copy.git"
   },
   "author": "Liad Berko",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/LiadBerko/aws-s3-client/issues"
+    "url": "https://github.com/LiadBerko/aws-s3-multipart-copy/issues"
   },
-  "homepage": "https://github.com/LiadBerko/aws-s3-client#readme",
+  "homepage": "https://github.com/LiadBerko/aws-s3-multipart-copy#readme",
   "nyc": {
     "check-coverage": true,
-    "lines": 95,
+    "lines": 98,
     "include": [
       "src"
     ],
