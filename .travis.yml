@@ -3,5 +3,6 @@ language: node_js
 node_js:
   - "8"
   - "node"
+before_script: "npm install --only=dev"
 script: "npm test"
 after_success: 'npm run coveralls'
