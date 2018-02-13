@@ -1,13 +1,13 @@
 'use strict';
 
-var AWS = require('aws-sdk');
+let AWS = require('aws-sdk');
 
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
 let s3, logger;
 
-var init = function (aws_s3_object, initialized_logger) {
+let init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
@@ -24,7 +24,13 @@ var init = function (aws_s3_object, initialized_logger) {
     return;
 };
 
-var copyLargeObject = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
+/**
+ * Throws the error of initiateMultipartCopy in case such occures
+ * @param {*} options an object of parameters obligated to hold the below keys
+ * (note that copy_part_size_bytes, copied_object_permissions, expiration_period are optional and will be assigned with default values if not given)
+ * @param {*} request_context optional parameter for logging purposes
+ */
+let copyLargeObject = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
     let upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context);
     let partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
     let copyPartFunctionsArray = [];
@@ -98,7 +104,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
             return Promise.resolve(result);
         })
         .catch((err) => {
-            logger.error({ msg: 'multipart copy failed to abort', context: request_context, error: err });
+            logger.error({ msg: 'abort multipart copy failed', context: request_context, error: err });
             return Promise.reject(err);
         });
 };
