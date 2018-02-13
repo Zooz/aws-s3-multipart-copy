@@ -3,7 +3,7 @@
 let bunyan = require('bunyan'),
     sinon = require('sinon'),
     should = require('should'),
-    deepCopy = require('deepCopy'),
+    deepCopy = require('deepcopy'),
     rewire = require('rewire'),
     s3LargeCopyClient = rewire('../../src/large-object-copy'),
     AWS = require('aws-sdk'),
@@ -106,7 +106,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             abortMultipartUploadStub = sandBox.stub(s3, 'abortMultipartUpload');
         });
 
-        it('Should succeed with mandatory letiables passed', function () {
+        it('Should succeed with all variables passed', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
@@ -125,7 +125,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should succeed with only mandatory letiables passed', function () {
+        it('Should succeed with all mandatory letiables passed', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
@@ -148,6 +148,25 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(uploadPartCopyStub.calledTwice).equal(true);
                     should(uploadPartCopyStub.args[0][0]).eql(testData.expected_uploadPartCopy_firstCallArgs);
                     should(uploadPartCopyStub.args[1][0]).eql(expected_uploadPartCopy_secondCallArgs);
+                    should(completeMultipartUploadStub.calledOnce).equal(true);
+                    should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
+                })
+        });
+
+        it('Should succeed with all variables passed and object_size is smaller then copy_part_size_bytes', function () {
+            createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
+            uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
+            completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
+
+            return s3LargeCopyClient.copyLargeObject(testData.full_request_options, testData.request_context)
+                .then(() => {
+                    should(loggerInfoSpy.callCount).equal(5)
+                    should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
+                    should(createMultipartUploadStub.calledOnce).equal(true);
+                    should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
+                    should(uploadPartCopyStub.calledTwice).equal(true);
+                    should(uploadPartCopyStub.args[0][0]).eql(testData.expected_uploadPartCopy_firstCallArgs);
+                    should(uploadPartCopyStub.args[1][0]).eql(testData.expected_uploadPartCopy_secondCallArgs);
                     should(completeMultipartUploadStub.calledOnce).equal(true);
                     should(completeMultipartUploadStub.args[0][0]).eql(testData.expected_completeMultipartUploadStub_args);
                 })
