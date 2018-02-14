@@ -103,5 +103,13 @@ module.exports = {
         promise: function () {
             return Promise.resolve({ Parts: ['part 1', 'part 2'] })
         }
+    },
+    expected_abort_rejection_response: {
+        msg: 'multipart copy aborted',
+        parameters: {
+            Bucket: 'destination_bucket',
+            Key: 'copied_object_name',
+            UploadId: '1a2b3c4d',
+        }
     }
 }
