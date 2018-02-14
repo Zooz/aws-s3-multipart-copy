@@ -148,7 +148,12 @@ let options = {
         })
 
         /*
-            err = { Parts: ['part 1', 'part 2'] }
+            err = {
+                message: 'Abort procedure passed but copy parts were not removed'
+                details: {
+                    Parts: ['part 1', 'part 2']
+                    }
+                }
         */
 ```
 Negative 2 - abort action succeded
@@ -175,8 +180,8 @@ let options = {
 
         /*
             err = {
-                    msg: 'multipart copy aborted',
-                    parameters: {
+                    message: 'multipart copy aborted',
+                    details: {
                         Bucket: destination_bucket,
                         Key: copied_object_name,
                         UploadId: upload_id
