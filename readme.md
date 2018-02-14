@@ -1,9 +1,7 @@
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
-[![NPM Downloads][downloads-image]][downloads-url]
-<!-- [![Maintainability][codeclimate-maintainability-image]][codeclimate-maintainability-url] -->
-<!-- [![Test Coverage][codeclimate-coverage-image]][codeclimate-coverage-url] -->
+<!--[![Test Coverage][coveralls-image]][coveralls-url]-->
+<!--[![NPM Downloads][downloads-image]][downloads-url]-->
 
 # aws-s3-multipart-copy
 
@@ -28,7 +26,7 @@ npm install aws-s3-multipart-copy
 
 aws-s3-multipart-copy is based on the aws-sdk and therefore requires an initialized AWS.S3 instance.
 
-Also, it requires a logger instance weich supports 'info' and 'error' level of logging (meaning logger.info and logger.error are functions).
+Also, it requires a logger instance which supports 'info' and 'error' level of logging (meaning logger.info and logger.error are functions).
 
 ### Example
 ```js
@@ -54,7 +52,7 @@ s3Module.init(s3, logger);
 After module is initialized, the copyObjectMultipart functionality is ready for usage.
 copyObjectMultipart returns a promise and can only copy (and not upload) objects from bucket to bucket.
 
-** Objects for multipart copy must be at least 5MB big. 
+** Objects size for multipart copy must be at least 5MB. 
 
 The method receives two parameters: options and request_context
 
@@ -74,18 +72,18 @@ The method receives two parameters: options and request_context
 ### Response
 - A successful result might hold any of the following keys as specified in [aws s3 completeMultipartUpload docs](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#completeMultipartUpload-property)
 
-    Location — (String)
-    Bucket — (String)
-    Key — (String)
-    Expiration — (String) If the object expiration is configured, this will contain the expiration date (expiry-date) and rule ID (rule-id). The value of rule-id is URL encoded.
-    ETag — (String) Entity tag of the object.
-    ServerSideEncryption — (String) The Server-side encryption algorithm used when storing this object in S3 (e.g., AES256, aws:kms). Possible values include:
-        "AES256"
-        "aws:kms"
-    VersionId — (String) Version of the object.
-    SSEKMSKeyId — (String) If present, specifies the ID of the AWS Key Management Service (KMS) master encryption key that was used for the object.
-    RequestCharged — (String) If present, indicates that the requester was successfully charged for the request. Possible values include:
-        "requester"
+    - Location — (String)
+    - Bucket — (String)
+    - Key — (String)
+    - Expiration — (String) If the object expiration is configured, this will contain the expiration date (expiry-date) and rule ID (rule-id). The value of rule-id is URL encoded.
+    - ETag — (String) Entity tag of the object.
+    - ServerSideEncryption — (String) The Server-side encryption algorithm used when storing this object in S3 (e.g., AES256, aws:kms). Possible values include:
+        - "AES256"
+        - "aws:kms"
+    - VersionId — (String) Version of the object.
+    - SSEKMSKeyId — (String) If present, specifies the ID of the AWS Key Management Service (KMS) master encryption key that was used for the object.
+    - RequestCharged — (String) If present, indicates that the requester was successfully charged for the request. Possible values include:
+        - "requester"
 
 - In case multipart copy fails, two scenarios are possible:
     - The copy will be aborted and copy parts will be deleted from s3 - copyObjectMultipart will reject
