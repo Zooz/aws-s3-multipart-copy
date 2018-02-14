@@ -12,6 +12,9 @@ The module manages the copy parts order and bytes range according to the size of
 
 ** The package supports aws-sdk version '2006-03-01' and above.
 ** The package supports node 8 version and above.
+
+[![NPM](https://nodei.co/npm/aws-s3-multipart-copy.png?downloads=true&downloadRank=true&stars=true)][npm-stats]
+
 ## Installing
 
 ```
@@ -86,6 +89,7 @@ The method receives two parameters: options and request_context
 
 - In case multipart copy fails, two scenarios are possible:
     - The copy will be aborted and copy parts will be deleted from s3 - copyObjectMultipart will reject
+    - The abort procedure passed but the copy parts were not deleted from s3 - copyObjectMultipart will reject
     - The abort procedure fails and the copy parts will remain in s3 - copyObjectMultipart will reject
 
 ### Example
@@ -123,16 +127,72 @@ let options = {
         */
 ```
 
-[npm-image]: https://img.shields.io/npm/v/requestxn.svg?style=flat
-[npm-url]: https://npmjs.org/package/requestxn
-<!--[travis-image]: https://travis-ci.org/kobik/requestxn.svg?branch=master-->
-<!--[travis-url]: https://travis-ci.org/kobik/requestxn-->
-<!--[coveralls-image]: https://coveralls.io/repos/github/kobik/requestxn/badge.svg?branch=master-->
-<!--[coveralls-url]: https://coveralls.io/repos/github/kobik/requestxn/badge.svg?branch=master-->
-<!--[downloads-image]: http://img.shields.io/npm/dm/requestxn.svg?style=flat-->
-<!--[downloads-url]: https://npmjs.org/package/requestxn-->
-<!--[npm-stats]: https://nodei.co/npm/requestxn/-->
-[codeclimate-maintainability-image]: https://api.codeclimate.com/v1/badges/d7bd5d2253291c57dd69/maintainability
-<!--[codeclimate-maintainability-url]: https://codeclimate.com/github/kobik/requestxn/maintainability-->
-[codeclimate-coverage-image]: https://api.codeclimate.com/v1/badges/d7bd5d2253291c57dd69/test_coverage
-<!--[codeclimate-coverage-url]: https://codeclimate.com/github/kobik/requestxn/test_coverage-->
+Negative 1 - abort action passed but copy parts were not removed
+```js
+let request_context = 'request_context';
+let options = {
+        source_bucket: 'source_bucket',
+        object_key: 'object_key',
+        destination_bucket: 'destination_bucket',
+        copied_object_name: 'someLogicFolder/copied_object_name',
+        object_size: 70000000,
+        copy_part_size_bytes: 50000000,
+        copied_object_permissions: 'bucket-owner-full-control',
+        expiration_period: 100000
+    };
+
+    return s3Module.copyObjectMultipart(options, request_context)
+        .then((result) => {
+            // handle result 
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+
+        /*
+            err = { Parts: ['part 1', 'part 2'] }
+        */
+```
+Negative 2 - abort action succeded
+```js
+let request_context = 'request_context';
+let options = {
+        source_bucket: 'source_bucket',
+        object_key: 'object_key',
+        destination_bucket: 'destination_bucket',
+        copied_object_name: 'someLogicFolder/copied_object_name',
+        object_size: 70000000,
+        copy_part_size_bytes: 50000000,
+        copied_object_permissions: 'bucket-owner-full-control',
+        expiration_period: 100000
+    };
+
+    return s3Module.copyObjectMultipart(options, request_context)
+        .then((result) => {
+            // handle result 
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+
+        /*
+            err = {
+                    msg: 'multipart copy aborted',
+                    parameters: {
+                        Bucket: destination_bucket,
+                        Key: copied_object_name,
+                        UploadId: upload_id
+                    }
+                }
+        */
+```
+
+[npm-image]: https://img.shields.io/npm/v/aws-s3-multipart-copy.svg?style=flat
+[npm-url]: https://npmjs.org/package/aws-s3-multipart-copy
+[travis-image]: https://api.travis-ci.org/LiadBerko/aws-s3-multipart-copy.svg?branch=master
+[travis-url]: https://travis-ci.org/LiadBerko/aws-s3-multipart-copy
+<!--[coveralls-image]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
+<!--[coveralls-url]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
+[downloads-image]: http://img.shields.io/npm/dm/aws-s3-multipart-copy.svg?style=flat
+<!--[downloads-url]: https://npmjs.org/package/aws-s3-multipart-copy-->
+<!--[npm-stats]: https://nodei.co/npm/aws-s3-multipart-copy/-->
