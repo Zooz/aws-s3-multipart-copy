@@ -5,16 +5,16 @@ let bunyan = require('bunyan'),
     should = require('should'),
     deepCopy = require('deepcopy'),
     rewire = require('rewire'),
-    s3LargeCopyClient = rewire('../../src/copy-object-multipart'),
+    s3Module = rewire('../../src/copy-object-multipart'),
     AWS = require('aws-sdk'),
     pkginfo = require('pkginfo')(module, 'version'),
     testData = require('../utils/unit-tests-data'),
     APP_VERSION = module.exports.version,
     logger = bunyan.createLogger({
-        name: 'reports-delivery',
-        level: process.env.LOG_LEVEL || 'info',
+        name: 'copy-object-multipart',
+        level: 'info',
         version: APP_VERSION,
-        logType: 'reports-delivery-log',
+        logType: 'copy-object-multipart-log',
         serializers: { err: bunyan.stdSerializers.err }
     });
 
@@ -39,11 +39,11 @@ describe('AWS S3 multupart copy client unit tests', function () {
         it('Should pass when given valid s3 and logger objects', function () {
             s3 = new AWS.S3();
 
-            s3LargeCopyClient.init(s3, logger);
+            s3Module.init(s3, logger);
 
             should(loggerInfoSpy.calledOnce).equal(true);
             should(loggerInfoSpy.args[0][0]).eql({ msg: 'S3 client initialized successfully' });
-            should(s3LargeCopyClient.__get__('s3')).equal(s3);
+            should(s3Module.__get__('s3')).equal(s3);
         });
 
         it('Should throw error when given an invalid s3 object', function () {
@@ -51,7 +51,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             let expected_error = new Error('Invalid AWS.S3 object received');
 
             try {
-                s3LargeCopyClient.init(notS3, logger);
+                s3Module.init(notS3, logger);
             } catch (err) {
                 should(loggerInfoSpy.notCalled).equal(true);
                 should(err).eql(expected_error);
@@ -62,7 +62,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             let expected_error = new Error('Invalid AWS.S3 object received');
 
             try {
-                s3LargeCopyClient.init(undefined, logger);
+                s3Module.init(undefined, logger);
             } catch (err) {
                 should(loggerInfoSpy.notCalled).equal(true);
                 should(err).eql(expected_error);
@@ -75,7 +75,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             let expected_error = new Error('Invalid logger object received');
 
             try {
-                s3LargeCopyClient.init(s3, notLogger);
+                s3Module.init(s3, notLogger);
             } catch (err) {
                 should(loggerInfoSpy.notCalled).equal(true);
                 should(err).eql(expected_error);
@@ -87,7 +87,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             let expected_error = new Error('Invalid logger object received');
 
             try {
-                s3LargeCopyClient.init(s3, undefined);
+                s3Module.init(s3, undefined);
             } catch (err) {
                 should(loggerInfoSpy.notCalled).equal(true);
                 should(err).eql(expected_error);
@@ -98,7 +98,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
     describe('Testing copyObjectMultipart', function () {
         before(() => {
             s3 = new AWS.S3();
-            s3LargeCopyClient.init(s3, logger);
+            s3Module.init(s3, logger);
             loggerInfoSpy.reset();
             createMultipartUploadStub = sandBox.stub(s3, 'createMultipartUpload');
             uploadPartCopyStub = sandBox.stub(s3, 'uploadPartCopy');
@@ -112,7 +112,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
@@ -126,7 +126,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should succeed with all mandatory letiables passed', function () {
+        it('Should succeed with all mandatory variables passed', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
@@ -140,7 +140,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 ACL: 'private'
             }
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.partial_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.partial_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
@@ -166,7 +166,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             let expected_completeMultipartUploadStub_args = deepCopy(testData.expected_completeMultipartUploadStub_args);
             expected_completeMultipartUploadStub_args.MultipartUpload.Parts = [{ ETag: '1a1b2s3d2f1e2g3sfsgdsg', PartNumber: 1 }]
 
-            return s3LargeCopyClient.copyObjectMultipart(full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(4)
                     should(loggerInfoSpy.args[0][0]).eql({ msg: 'multipart copy initiated successfully: ' + JSON.stringify({ UploadId: '1a2b3c4d' }), context: 'request_context' })
@@ -182,13 +182,17 @@ describe('AWS S3 multupart copy client unit tests', function () {
         it('Should fail due to createMultipartUpload error and not call abortMultipartCopy', function () {
             createMultipartUploadStub.returns(testData.all_stubs_error_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.partial_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.partial_request_options, testData.request_context)
                 .then(() => {
-                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                    throw new Error('s3Module resolved when an error should have been rejected');
                 })
                 .catch((err) => {
                     should(loggerErrorSpy.calledOnce).equal(true);
                     should(loggerErrorSpy.args[0][0]).eql({ msg: 'multipart copy failed to initiate', context: 'request_context', error: 'test_error' });
+                    should(uploadPartCopyStub.notCalled).equal(true);
+                    should(completeMultipartUploadStub.notCalled).equal(true);
+                    should(abortMultipartUploadStub.notCalled).equal(true);
+                    should(listPartsStub.notCalled).equal(true);
                     should(err).eql('test_error');
                 })
         });
@@ -199,7 +203,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
             listPartsStub.returns(testData.listPartsStub_positive_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(2)
                     should(loggerInfoSpy.args[1][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({ Parts: [] }), context: 'request_context' });
@@ -225,7 +229,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
             listPartsStub.returns(testData.listPartsStub_positive_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
                     should(loggerInfoSpy.callCount).equal(5)
                     should(loggerInfoSpy.args[4][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({ Parts: [] }), context: 'request_context' });
@@ -252,9 +256,9 @@ describe('AWS S3 multupart copy client unit tests', function () {
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
             listPartsStub.returns(testData.listPartsStub_negative_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
-                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                    throw new Error('s3Module resolved when an error should have been rejected');
                 })
                 .catch((err) => {
                     should(loggerInfoSpy.callCount).equal(4)
@@ -287,9 +291,9 @@ describe('AWS S3 multupart copy client unit tests', function () {
             completeMultipartUploadStub.returns(testData.all_stubs_error_response);
             abortMultipartUploadStub.returns(testData.all_stubs_error_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
-                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                    throw new Error('s3Module resolved when an error should have been rejected');
                 })
                 .catch((err) => {
                     should(loggerInfoSpy.callCount).equal(4)
@@ -318,11 +322,12 @@ describe('AWS S3 multupart copy client unit tests', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.all_stubs_error_response);
-            abortMultipartUploadStub.returns(testData.all_stubs_error_response);
+            abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
+            listPartsStub.returns(testData.all_stubs_error_response);
 
-            return s3LargeCopyClient.copyObjectMultipart(testData.full_request_options, testData.request_context)
+            return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
-                    throw new Error('s3LargeCopyClient resolved when an error should have been rejected');
+                    throw new Error('s3Module resolved when an error should have been rejected');
                 })
                 .catch((err) => {
                     should(loggerInfoSpy.callCount).equal(4)
@@ -346,13 +351,5 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(err).equal('test_error');
                 })
         });
-
-        // it('Should check for retries configurations and not call abortMultipartCopy upon success', function () {
-
-        // });
-
-        // it('Should check for retries configurations and call abortMultipartCopy upon failure', function () {
-
-        // });
     });
 });
