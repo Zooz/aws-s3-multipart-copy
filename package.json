@@ -35,12 +35,12 @@
     "report-dir": "coverage"
   },
   "dependencies": {
-    "aws-sdk": "^2.192.0"
+    "aws-sdk": "^2.192.0",
+    "lodash": "^4.17.5"
   },
   "devDependencies": {
     "bunyan": "^1.8.12",
     "deepcopy": "^0.6.3",
-    "lodash": "^4.17.5",
     "mocha": "^4.1.0",
     "nyc": "^11.4.1",
     "pkginfo": "^0.4.1",

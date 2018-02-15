@@ -1,6 +1,7 @@
 'use strict';
 
-let AWS = require('aws-sdk');
+let AWS = require('aws-sdk'),
+    _ = require('lodash');
 
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
@@ -11,7 +12,7 @@ let init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
-    if (!s3 || !(s3 instanceof AWS.S3)) {
+    if (!_.get(s3, '__proto__.api.fullName') || !(s3.__proto__.api.fullName === 'Amazon Simple Storage Service')) {
         throw new Error('Invalid AWS.S3 object received');
     } else {
         if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
@@ -103,23 +104,23 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
         })
         .catch((err) => {
             logger.error({ msg: 'abort multipart copy failed', context: request_context, error: err });
-            
+
             return Promise.reject(err);
         })
         .then((parts_list) => {
             if (parts_list.Parts.length > 0) {
                 logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, parts_list: parts_list });
-                
+
                 let err = new Error('Abort procedure passed but copy parts were not removed')
                 err.details = parts_list;
 
                 return Promise.reject(err);
             } else {
                 logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(parts_list), context: request_context });
-                
+
                 let err = new Error('multipart copy aborted');
                 err.details = params;
-                
+
                 return Promise.reject(err);
             }
         });

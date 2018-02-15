@@ -1,7 +1,7 @@
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
-<!--[![NPM Downloads][downloads-image]][downloads-url]-->
+[![NPM Downloads][downloads-image]][downloads-url]
 
 # aws-s3-multipart-copy
 
@@ -12,7 +12,7 @@ The module manages the copy parts order and bytes range according to the size of
 
 ** The package supports node 8 version and above.
 
-[![NPM](https://nodei.co/npm/aws-s3-multipart-copy.png?downloads=true&downloadRank=true&stars=true)][npm-stats]
+[![NPM](https://nodei.co/npm/aws-s3-multipart-copy.png)](https://nodei.co/npm/aws-s3-multipart-copy/)
 
 ## Installing
 
@@ -195,8 +195,8 @@ let options = {
 [npm-url]: https://npmjs.org/package/aws-s3-multipart-copy
 [travis-image]: https://api.travis-ci.org/LiadBerko/aws-s3-multipart-copy.svg?branch=master
 [travis-url]: https://travis-ci.org/LiadBerko/aws-s3-multipart-copy
-<!--[coveralls-image]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
-<!--[coveralls-url]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
+[coveralls-image]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master
 [downloads-image]: http://img.shields.io/npm/dm/aws-s3-multipart-copy.svg?style=flat
 [downloads-url]: https://npmjs.org/package/aws-s3-multipart-copy
-<!--[npm-stats]: https://nodei.co/npm/aws-s3-multipart-copy/-->
+[npm-stats]: https://nodei.co/npm/aws-s3-multipart-copy/
