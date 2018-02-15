@@ -1,6 +1,6 @@
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
-<!--[![Test Coverage][coveralls-image]][coveralls-url]-->
+[![Test Coverage][coveralls-image]][coveralls-url]
 <!--[![NPM Downloads][downloads-image]][downloads-url]-->
 
 # aws-s3-multipart-copy
@@ -9,6 +9,7 @@ Wraps [aws-sdk](https://www.npmjs.com/package/aws-sdk) with a multipart-copy man
 The module manages the copy parts order and bytes range according to the size of the object and the desired copy part size. It speeds up the multipart copying process by sending multiple copy-part requests simultaneously.
 
 ** The package supports aws-sdk version '2006-03-01' and above.
+
 ** The package supports node 8 version and above.
 
 [![NPM](https://nodei.co/npm/aws-s3-multipart-copy.png?downloads=true&downloadRank=true&stars=true)][npm-stats]
@@ -85,7 +86,7 @@ The method receives two parameters: options and request_context
     - RequestCharged — (String) If present, indicates that the requester was successfully charged for the request. Possible values include:
         - "requester"
 
-- In case multipart copy fails, two scenarios are possible:
+- In case multipart copy fails, three scenarios are possible:
     - The copy will be aborted and copy parts will be deleted from s3 - copyObjectMultipart will reject
     - The abort procedure passed but the copy parts were not deleted from s3 - copyObjectMultipart will reject
     - The abort procedure fails and the copy parts will remain in s3 - copyObjectMultipart will reject
@@ -197,5 +198,5 @@ let options = {
 <!--[coveralls-image]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
 <!--[coveralls-url]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master-->
 [downloads-image]: http://img.shields.io/npm/dm/aws-s3-multipart-copy.svg?style=flat
-<!--[downloads-url]: https://npmjs.org/package/aws-s3-multipart-copy-->
+[downloads-url]: https://npmjs.org/package/aws-s3-multipart-copy
 <!--[npm-stats]: https://nodei.co/npm/aws-s3-multipart-copy/-->

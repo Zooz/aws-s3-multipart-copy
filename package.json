@@ -32,7 +32,7 @@
     ],
     "cache": true,
     "all": true,
-    "report-dir": "./coverage"
+    "report-dir": "coverage"
   },
   "dependencies": {
     "aws-sdk": "^2.192.0"
