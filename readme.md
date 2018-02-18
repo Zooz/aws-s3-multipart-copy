@@ -194,10 +194,10 @@ let options = {
 
 [npm-image]: https://img.shields.io/npm/v/aws-s3-multipart-copy.svg?style=flat
 [npm-url]: https://npmjs.org/package/aws-s3-multipart-copy
-[travis-image]: https://api.travis-ci.org/LiadBerko/aws-s3-multipart-copy.svg?branch=master
-[travis-url]: https://travis-ci.org/LiadBerko/aws-s3-multipart-copy
-[coveralls-image]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master
-[coveralls-url]: https://coveralls.io/repos/github/LiadBerko/aws-s3-multipart-copy/badge.svg?branch=master
+[travis-image]: https://api.travis-ci.org/Zooz/aws-s3-multipart-copy.svg?branch=master
+[travis-url]: https://travis-ci.org/Zooz/aws-s3-multipart-copy
+[coveralls-image]: https://coveralls.io/repos/github/Zooz/aws-s3-multipart-copy/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/repos/github/Zooz/aws-s3-multipart-copy/badge.svg?branch=master
 [downloads-image]: http://img.shields.io/npm/dm/aws-s3-multipart-copy.svg?style=flat
 [downloads-url]: https://npmjs.org/package/aws-s3-multipart-copy
 [npm-stats]: https://nodei.co/npm/aws-s3-multipart-copy/
