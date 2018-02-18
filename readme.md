@@ -21,8 +21,16 @@ The module manages the copy parts order and bytes range according to the size of
 npm install aws-s3-multipart-copy
 ```
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<!--**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*-->
+
 - [init](#init)
-- [copyObjectMultipart](#copyObjectMultipart)
+- [copyObjectMultipart](#copyobjectmultipart)
+    - [Request parameters](#request-parameters)
+    - [Response](#response)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## init
 
