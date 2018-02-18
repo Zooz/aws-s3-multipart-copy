@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LiadBerko/aws-s3-multipart-copy.git"
+    "url": "git+https://github.com/Zooz/aws-s3-multipart-copy.git"
   },
   "author": "Liad Berko",
-  "license": "ISC",
+  "license": "Apache 2.0",
   "bugs": {
-    "url": "https://github.com/LiadBerko/aws-s3-multipart-copy/issues"
+    "url": "https://github.com/Zooz/aws-s3-multipart-copy.git/issues"
   },
-  "homepage": "https://github.com/LiadBerko/aws-s3-multipart-copy#readme",
+  "homepage": "https://github.com/Zooz/aws-s3-multipart-copy.git#readme",
   "nyc": {
     "check-coverage": true,
     "lines": 98,
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "bunyan": "^1.8.12",
+    "coveralls": "^3.0.0",
     "deepcopy": "^0.6.3",
     "mocha": "^4.1.0",
     "nyc": "^11.4.1",
