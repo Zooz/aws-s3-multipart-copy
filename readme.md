@@ -2,6 +2,7 @@
 [![Build Status][travis-image]][travis-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
 [![NPM Downloads][downloads-image]][downloads-url]
+[![NSP Status](https://nodesecurity.io/orgs/zooz/projects/5da31d63-65ef-4580-9989-b412767fa9cb/badge)](https://nodesecurity.io/orgs/zooz/projects/5da31d63-65ef-4580-9989-b412767fa9cb)
 
 # aws-s3-multipart-copy
 
