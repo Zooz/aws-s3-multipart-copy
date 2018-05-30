@@ -154,6 +154,26 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
+        it('Should url-encode CopySource key', function () {
+            createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
+            uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
+            completeMultipartUploadStub.returns(testData.completeMultipartUploadStub_positive_response);
+
+            const partial_request_options = deepCopy(testData.partial_request_options);
+            partial_request_options.object_key = '+?=/&_-.txt';
+            const expected_uploadPartCopy_firstCallArgs = deepCopy(testData.expected_uploadPartCopy_firstCallArgs);
+            expected_uploadPartCopy_firstCallArgs.CopySource = 'source_bucket%2F%2B%3F%3D%2F%26_-.txt';
+            const expected_uploadPartCopy_secondCallArgs = deepCopy(testData.expected_uploadPartCopy_secondCallArgs);
+            expected_uploadPartCopy_secondCallArgs.CopySource = 'source_bucket%2F%2B%3F%3D%2F%26_-.txt';
+            expected_uploadPartCopy_secondCallArgs.CopySourceRange = 'bytes=50000000-99999999';
+
+            return s3Module.copyObjectMultipart(partial_request_options, testData.request_context)
+                .then(() => {
+                    should(uploadPartCopyStub.args[0][0]).eql(expected_uploadPartCopy_firstCallArgs);
+                    should(uploadPartCopyStub.args[1][0]).eql(expected_uploadPartCopy_secondCallArgs);
+                })
+        });
+
         it('Should succeed with all variables passed and object_size is smaller then copy_part_size_bytes', function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);

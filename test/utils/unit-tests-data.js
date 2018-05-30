@@ -35,7 +35,7 @@ module.exports = {
     },
     expected_uploadPartCopy_firstCallArgs: {
         Bucket: 'destination_bucket',
-        CopySource: 'source_bucket/object_key',
+        CopySource: 'source_bucket%2Fobject_key',
         CopySourceRange: 'bytes=0-49999999',
         Key: 'copied_object_name',
         PartNumber: 1,
@@ -43,7 +43,7 @@ module.exports = {
     },
     expected_uploadPartCopy_secondCallArgs: {
         Bucket: 'destination_bucket',
-        CopySource: 'source_bucket/object_key',
+        CopySource: 'source_bucket%2Fobject_key',
         CopySourceRange: 'bytes=50000000-69999999',
         Key: 'copied_object_name',
         PartNumber: 2,
