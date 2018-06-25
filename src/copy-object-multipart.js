@@ -1,14 +1,14 @@
 'use strict';
 
-let AWS = require('aws-sdk'),
-    _ = require('lodash');
+const _ = require('lodash');
+const path = require('path');
 
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
 let s3, logger;
 
-let init = function (aws_s3_object, initialized_logger) {
+const init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
@@ -30,10 +30,10 @@ let init = function (aws_s3_object, initialized_logger) {
  * (note that copy_part_size_bytes, copied_object_permissions, expiration_period are optional and will be assigned with default values if not given)
  * @param {*} request_context optional parameter for logging purposes
  */
-let copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
-    let upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context);
-    let partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
-    let copyPartFunctionsArray = [];
+const copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
+    const upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context);
+    const partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
+    const copyPartFunctionsArray = [];
 
     partitionsRangeArray.forEach((partitionRange, index) => {
         copyPartFunctionsArray.push(copyPart(source_bucket, destination_bucket, index + 1, object_key, partitionRange, copied_object_name, upload_id));
@@ -43,16 +43,16 @@ let copyObjectMultipart = async function ({ source_bucket, object_key, destinati
         .then((copy_results) => {
             logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context })
 
-            let copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
+            const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
             return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
         })
-        .catch((err) => {
+        .catch(() => {
             return abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context);
         });
 };
 
 function initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context) {
-    let params = {
+    const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
         ACL: copied_object_permissions || DEFAULT_COPIED_OBJECT_PERMISSIONS
@@ -71,9 +71,10 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
 };
 
 function copyPart(source_bucket, destination_bucket, part_number, object_key, partition_range, copied_object_name, upload_id) {
-    let params = {
+    const encodedSourceKey = encodeURIComponent(path.join(source_bucket, object_key))
+    const params = {
         Bucket: destination_bucket,
-        CopySource: source_bucket + '/' + object_key,
+        CopySource: encodedSourceKey,
         CopySourceRange: 'bytes=' + partition_range,
         Key: copied_object_name,
         PartNumber: part_number,
@@ -92,14 +93,14 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
 }
 
 function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context) {
-    let params = {
+    const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
         UploadId: upload_id
     };
 
     return s3.abortMultipartUpload(params).promise()
-        .then((result) => {
+        .then(() => {
             return s3.listParts(params).promise()
         })
         .catch((err) => {
@@ -111,14 +112,14 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
             if (parts_list.Parts.length > 0) {
                 logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, parts_list: parts_list });
 
-                let err = new Error('Abort procedure passed but copy parts were not removed')
+                const err = new Error('Abort procedure passed but copy parts were not removed')
                 err.details = parts_list;
 
                 return Promise.reject(err);
             } else {
                 logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(parts_list), context: request_context });
 
-                let err = new Error('multipart copy aborted');
+                const err = new Error('multipart copy aborted');
                 err.details = params;
 
                 return Promise.reject(err);
@@ -127,7 +128,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
 };
 
 function completeMultipartCopy(destination_bucket, ETags_array, copied_object_name, upload_id, request_context) {
-    let params = {
+    const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
         MultipartUpload: {
@@ -148,10 +149,10 @@ function completeMultipartCopy(destination_bucket, ETags_array, copied_object_na
 }
 
 function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
-    let partitions = [];
-    let copy_part_size = copy_part_size_bytes || DEFAULT_COPY_PART_SIZE_BYTES;
-    let numOfPartitions = Math.floor(object_size / copy_part_size);
-    let remainder = object_size % copy_part_size;
+    const partitions = [];
+    const copy_part_size = copy_part_size_bytes || DEFAULT_COPY_PART_SIZE_BYTES;
+    const numOfPartitions = Math.floor(object_size / copy_part_size);
+    const remainder = object_size % copy_part_size;
     let index, partition;
 
     for (index = 0; index < numOfPartitions; index++) {
@@ -168,10 +169,10 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
 };
 
 function prepareResultsForCopyCompletion(copy_parts_results_array) {
-    let resultArray = [];
+    const resultArray = [];
 
     copy_parts_results_array.forEach((copy_part, index) => {
-        let newCopyPart = {};
+        const newCopyPart = {};
         newCopyPart.ETag = copy_part.CopyPartResult.ETag;
         newCopyPart.PartNumber = index + 1;
         resultArray.push(newCopyPart);

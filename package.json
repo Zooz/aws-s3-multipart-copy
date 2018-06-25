@@ -35,10 +35,10 @@
     "report-dir": "coverage"
   },
   "dependencies": {
-    "aws-sdk": "^2.192.0",
     "lodash": "^4.17.5"
   },
   "devDependencies": {
+    "aws-sdk": "^2.192.0",
     "bunyan": "^1.8.12",
     "coveralls": "^3.0.0",
     "deepcopy": "^0.6.3",
