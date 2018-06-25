@@ -17,11 +17,10 @@ const init = function (aws_s3_object, initialized_logger) {
     } else {
         if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
             logger.info({ msg: 'S3 client initialized successfully' });
-            return;
         } else {
             throw new Error('Invalid logger object received');
         }
-    };
+    }
 };
 
 /**
@@ -41,7 +40,7 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
 
     return Promise.all(copyPartFunctionsArray)
         .then((copy_results) => {
-            logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context })
+            logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context });
 
             const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
             return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
@@ -68,10 +67,10 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
             logger.error({ msg: 'multipart copy failed to initiate', context: request_context, error: err });
             return Promise.reject(err);
         });
-};
+}
 
 function copyPart(source_bucket, destination_bucket, part_number, object_key, partition_range, copied_object_name, upload_id) {
-    const encodedSourceKey = encodeURIComponent(path.join(source_bucket, object_key))
+    const encodedSourceKey = encodeURIComponent(path.join(source_bucket, object_key));
     const params = {
         Bucket: destination_bucket,
         CopySource: encodedSourceKey,
@@ -112,7 +111,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
             if (parts_list.Parts.length > 0) {
                 logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, parts_list: parts_list });
 
-                const err = new Error('Abort procedure passed but copy parts were not removed')
+                const err = new Error('Abort procedure passed but copy parts were not removed');
                 err.details = parts_list;
 
                 return Promise.reject(err);
@@ -125,7 +124,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
                 return Promise.reject(err);
             }
         });
-};
+}
 
 function completeMultipartCopy(destination_bucket, ETags_array, copied_object_name, upload_id, request_context) {
     const params = {
@@ -135,7 +134,7 @@ function completeMultipartCopy(destination_bucket, ETags_array, copied_object_na
             Parts: ETags_array
         },
         UploadId: upload_id
-    }
+    };
 
     return s3.completeMultipartUpload(params).promise()
         .then((result) => {
@@ -166,7 +165,7 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
     }
 
     return partitions;
-};
+}
 
 function prepareResultsForCopyCompletion(copy_parts_results_array) {
     const resultArray = [];
@@ -179,7 +178,7 @@ function prepareResultsForCopyCompletion(copy_parts_results_array) {
     });
 
     return resultArray;
-};
+}
 
 module.exports = {
     init: init,
