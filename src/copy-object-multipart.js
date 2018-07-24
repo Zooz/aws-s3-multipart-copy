@@ -43,10 +43,10 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
             logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context });
 
             const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
-            return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
+            return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context, sse);
         })
         .catch(() => {
-            return abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context);
+            return abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context, sse);
         });
 };
 
@@ -93,11 +93,12 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
         })
 }
 
-function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context) {
+function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context, sse) {
     const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
-        UploadId: upload_id
+        UploadId: upload_id,
+        SSECustomerAlgorithm: sse
     };
 
     return s3.abortMultipartUpload(params).promise()
