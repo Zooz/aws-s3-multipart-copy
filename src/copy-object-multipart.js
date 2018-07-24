@@ -55,7 +55,7 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
         Bucket: destination_bucket,
         Key: copied_object_name,
         ACL: copied_object_permissions || DEFAULT_COPIED_OBJECT_PERMISSIONS,
-        SSECustomerAlgorithm: sse
+        ServerSideEncryption: sse
     };
     expiration_period ? params.Expires = expiration_period : null;
 
@@ -70,7 +70,7 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
         });
 }
 
-function copyPart(source_bucket, destination_bucket, part_number, object_key, partition_range, copied_object_name, upload_id, sse) {
+function copyPart(source_bucket, destination_bucket, part_number, object_key, partition_range, copied_object_name, upload_id) {
     const encodedSourceKey = encodeURIComponent(path.join(source_bucket, object_key));
     const params = {
         Bucket: destination_bucket,
@@ -78,8 +78,7 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
         CopySourceRange: 'bytes=' + partition_range,
         Key: copied_object_name,
         PartNumber: part_number,
-        UploadId: upload_id,
-        SSECustomerAlgorithm: sse
+        UploadId: upload_id
     };
 
     return s3.uploadPartCopy(params).promise()
@@ -93,12 +92,11 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
         })
 }
 
-function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context, sse) {
+function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, request_context) {
     const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
-        UploadId: upload_id,
-        SSECustomerAlgorithm: sse
+        UploadId: upload_id
     };
 
     return s3.abortMultipartUpload(params).promise()
@@ -129,15 +127,14 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
         });
 }
 
-function completeMultipartCopy(destination_bucket, ETags_array, copied_object_name, upload_id, request_context, sse) {
+function completeMultipartCopy(destination_bucket, ETags_array, copied_object_name, upload_id, request_context) {
     const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
         MultipartUpload: {
             Parts: ETags_array
         },
-        UploadId: upload_id,
-        SSECustomerAlgorithm: sse
+        UploadId: upload_id
     };
 
     return s3.completeMultipartUpload(params).promise()
