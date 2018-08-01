@@ -18,9 +18,10 @@ module.exports = {
         object_size: 70000000,
         copy_part_size_bytes: 50000000,
         copied_object_permissions: 'copied_object_permissions',
-        expiration_period: 100000
+        expiration_period: 100000,
+        content_type: 'application/json'
     },
-    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period
+    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period, no content_type
         source_bucket: 'source_bucket',
         object_key: 'object_key',
         destination_bucket: 'destination_bucket',
@@ -31,7 +32,8 @@ module.exports = {
         Bucket: 'destination_bucket',
         Key: 'copied_object_name',
         ACL: 'copied_object_permissions',
-        Expires: 100000
+        Expires: 100000,
+        ContentType: 'application/json'
     },
     expected_uploadPartCopy_firstCallArgs: {
         Bucket: 'destination_bucket',
