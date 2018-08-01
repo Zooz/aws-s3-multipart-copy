@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const path = require('path');
 
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
@@ -71,7 +70,7 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
 }
 
 function copyPart(source_bucket, destination_bucket, part_number, object_key, partition_range, copied_object_name, upload_id) {
-    const encodedSourceKey = encodeURIComponent(path.join(source_bucket, object_key));
+    const encodedSourceKey = encodeURIComponent(`${source_bucket}/${object_key}`);
     const params = {
         Bucket: destination_bucket,
         CopySource: encodedSourceKey,
