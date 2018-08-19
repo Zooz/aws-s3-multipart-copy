@@ -29,8 +29,8 @@ const init = function (aws_s3_object, initialized_logger) {
  * (note that copy_part_size_bytes, copied_object_permissions, expiration_period are optional and will be assigned with default values if not given)
  * @param {*} request_context optional parameter for logging purposes
  */
-const copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period }, request_context) {
-    const upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context);
+const copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period, server_side_encryption }, request_context) {
+    const upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption);
     const partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
     const copyPartFunctionsArray = [];
 
@@ -50,13 +50,14 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
         });
 };
 
-function initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context) {
+function initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption) {
     const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
-        ACL: copied_object_permissions || DEFAULT_COPIED_OBJECT_PERMISSIONS
+        ACL: copied_object_permissions || DEFAULT_COPIED_OBJECT_PERMISSIONS,
     };
     expiration_period ? params.Expires = expiration_period : null;
+    server_side_encryption ? params.ServerSideEncryption = server_side_encryption : null;
 
     return s3.createMultipartUpload(params).promise()
         .then((result) => {
