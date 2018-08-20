@@ -19,9 +19,10 @@ module.exports = {
         copy_part_size_bytes: 50000000,
         copied_object_permissions: 'copied_object_permissions',
         expiration_period: 100000,
-        server_side_encryption: 'AES256'
+        server_side_encryption: 'AES256',
+        content_type: 'application/json'
     },
-    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period, no server_side_encryption
+    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period,  no server_side_encryption, no content_type
         source_bucket: 'source_bucket',
         object_key: 'object_key',
         destination_bucket: 'destination_bucket',
@@ -33,7 +34,8 @@ module.exports = {
         Key: 'copied_object_name',
         ACL: 'copied_object_permissions',
         Expires: 100000,
-        ServerSideEncryption: 'AES256'
+        ServerSideEncryption: 'AES256',
+        ContentType: 'application/json'
     },
     expected_uploadPartCopy_firstCallArgs: {
         Bucket: 'destination_bucket',
