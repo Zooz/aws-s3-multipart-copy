@@ -34,9 +34,7 @@
     "all": true,
     "report-dir": "coverage"
   },
-  "dependencies": {
-    "lodash": "^4.17.5"
-  },
+  "dependencies": {},
   "devDependencies": {
     "aws-sdk": "^2.192.0",
     "bunyan": "^1.8.12",
