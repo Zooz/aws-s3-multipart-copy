@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const path = require('path');
 
+const COPY_PART_SIZE_MINIMUM_BYTES = 5242880 // 5MB in bytes
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
@@ -157,11 +158,16 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
     let index, partition;
 
     for (index = 0; index < numOfPartitions; index++) {
-        partition = (index * copy_part_size) + '-' + ((index + 1) * copy_part_size - 1);
+        const nextIndex = index + 1;
+        if (nextIndex === numOfPartitions && remainder < COPY_PART_SIZE_MINIMUM_BYTES) {
+            partition = (index * copy_part_size) + '-' + ((nextIndex) * copy_part_size + remainder - 1);
+        } else {
+            partition = (index * copy_part_size) + '-' + ((nextIndex) * copy_part_size - 1);
+        }
         partitions.push(partition);
     }
 
-    if (remainder !== 0) {
+    if (remainder >= COPY_PART_SIZE_MINIMUM_BYTES) {
         partition = (index * copy_part_size) + '-' + (index * copy_part_size + remainder - 1);
         partitions.push(partition);
     }

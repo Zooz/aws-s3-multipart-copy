@@ -73,8 +73,8 @@ The method receives two parameters: options and request_context
     - destination_bucket: String (mandatory) - The bucket that you wish to copy to
     - copied_object_name: String (mandatory) - The full path (including the name of the object) for the copied object in the destination bucket
     - object_size: Integer (mandatory) - A number indicating the size of the object you wish to copy in bytes
-    - copy_part_size_bytes: Integer (optional) - A number indicating the size of each copy part in the process, if not passed it will be set to a default of 50MB
-        ** if object size does not devide exactly with the part size desired, last part will be smaller
+    - copy_part_size_bytes: Integer (optional) - A number indicating the size of each copy part in the process, if not passed it will be set to a default of 50MB. This value must be between 5MB and 5GB - 5MB.
+        ** if object size does not divide exactly with the part size desired, last part will be smaller or larger (depending on remainder size)
     - copied_object_permissions: String (optional) - The permissions to be given for the copied object as specified in [aws s3 ACL docs](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#permissions), if not passed it will be set to a default of 'private'
     - expiration_period: Integer/Date (optional) - A number (milliseconds) or Date indicating the time the copied object will remain in the destination before it will be deleted, if not passed there will be no expiration period for the object
 - request_context: String (optional) - this parameter will be logged in every log message, if not passed it will remain undefined.
