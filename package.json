@@ -40,10 +40,10 @@
   "devDependencies": {
     "aws-sdk": "^2.192.0",
     "bunyan": "^1.8.12",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.2",
     "deepcopy": "^0.6.3",
     "mocha": "^4.1.0",
-    "nyc": "^11.4.1",
+    "nyc": "^13.2.0",
     "pkginfo": "^0.4.1",
     "rewire": "^3.0.2",
     "should": "^13.2.1",
