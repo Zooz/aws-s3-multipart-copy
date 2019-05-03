@@ -79,6 +79,7 @@ The method receives two parameters: options and request_context
     - expiration_period: Integer/Date (optional) - A number (milliseconds) or Date indicating the time the copied object will remain in the destination before it will be deleted, if not passed there will be no expiration period for the object
     - content_type: String (optional) A standard MIME type describing the format of the object data
     - metadata: Object (optional) - A map of metadata to store with the object in S3
+    - cache_control: String (optional) - Specifies caching behavior along the request/reply chain
 - request_context: String (optional) - this parameter will be logged in every log message, if not passed it will remain undefined.
 
 ### Response
