@@ -37,7 +37,11 @@ module.exports = {
         ACL: 'copied_object_permissions',
         Expires: 100000,
         ServerSideEncryption: 'AES256',
-        ContentType: 'application/json'
+        ContentType: 'application/json',
+        CacheControl: 'max-age=60',
+        Metadata: {
+            'some-key': 'some-value'
+        }
     },
     expected_uploadPartCopy_firstCallArgs: {
         Bucket: 'destination_bucket',
