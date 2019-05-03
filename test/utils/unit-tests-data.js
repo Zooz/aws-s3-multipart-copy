@@ -20,7 +20,9 @@ module.exports = {
         copied_object_permissions: 'copied_object_permissions',
         expiration_period: 100000,
         server_side_encryption: 'AES256',
-        content_type: 'application/json'
+        content_type: 'application/json',
+        metadata: { 'some-key': 'some-value' },
+        cache_control: 'max-age=60'
     },
     partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period,  no server_side_encryption, no content_type
         source_bucket: 'source_bucket',
