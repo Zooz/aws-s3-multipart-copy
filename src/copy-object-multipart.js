@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const path = require('path');
 
-const COPY_PART_SIZE_MINIMUM_BYTES = 5242880 // 5MB in bytes
+const COPY_PART_SIZE_MINIMUM_BYTES = 5242880; // 5MB in bytes
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
