@@ -40,7 +40,7 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
 
     return Promise.all(copyPartFunctionsArray)
         .then((copy_results) => {
-            logger.info({ msg: 'copied all parts successfully: ' + JSON.stringify(copy_results), context: request_context });
+            logger.info({ msg: `copied all parts successfully: ${JSON.stringify(copy_results)}`, context: request_context });
 
             const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
             return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
@@ -64,7 +64,7 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
 
     return s3.createMultipartUpload(params).promise()
         .then((result) => {
-            logger.info({ msg: 'multipart copy initiated successfully: ' + JSON.stringify(result), context: request_context });
+            logger.info({ msg: `multipart copy initiated successfully: ${JSON.stringify(result)}`, context: request_context });
             return Promise.resolve(result.UploadId);
         })
         .catch((err) => {
@@ -116,11 +116,11 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
                 const err = new Error('Abort procedure passed but copy parts were not removed');
                 err.details = parts_list;
 
-                logger.error({ msg: 'abort multipart copy failed, copy parts were not removed: ', + JSON.stringify(parts_list), context: request_context, error: err });
+                logger.error({ msg: `abort multipart copy failed, copy parts were not removed: ${JSON.stringify(parts_list)}`, context: request_context, error: err });
 
                 return Promise.reject(err);
             } else {
-                logger.info({ msg: 'multipart copy aborted successfully: ' + JSON.stringify(parts_list), context: request_context });
+                logger.info({ msg: `multipart copy aborted successfully: ${JSON.stringify(parts_list)}`, context: request_context });
 
                 const err = new Error('multipart copy aborted');
                 err.details = params;
@@ -142,7 +142,7 @@ function completeMultipartCopy(destination_bucket, ETags_array, copied_object_na
 
     return s3.completeMultipartUpload(params).promise()
         .then((result) => {
-            logger.info({ msg: 'multipart copy completed successfully: ' + JSON.stringify(result), context: request_context });
+            logger.info({ msg: `multipart copy completed successfully: ${JSON.stringify(result)}`, context: request_context });
             return Promise.resolve(result);
         })
         .catch((err) => {
