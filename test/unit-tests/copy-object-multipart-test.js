@@ -238,8 +238,8 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(loggerInfoSpy.callCount).equal(2)
                     should(loggerInfoSpy.args[1][0]).eql({ msg: 'multipart copy aborted successfully: ' + JSON.stringify({ Parts: [] }), context: 'request_context' });
                     should(loggerErrorSpy.calledTwice).equal(true);
-                    should(loggerErrorSpy.args[0][0]).eql('CopyPart 1 Failed: "test_error"');
-                    should(loggerErrorSpy.args[1][0]).eql('CopyPart 2 Failed: "test_error"');
+                    should(loggerErrorSpy.args[0][0]).eql({msg: 'CopyPart 1 Failed: "test_error"', error: 'test_error'});
+                    should(loggerErrorSpy.args[1][0]).eql({msg: 'CopyPart 2 Failed: "test_error"', error: 'test_error'});
                     should(createMultipartUploadStub.calledOnce).equal(true);
                     should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
                     should(uploadPartCopyStub.calledTwice).equal(true);
@@ -284,7 +284,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should call abortMultipartCopy upon error from completeMultipartUpload and a list of parts returned from listParts', function () {
+        it('Should call abortMultipartCopy upon error from completeMultipartUpload and a list of parts returned from listParts', async function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.all_stubs_error_response);
@@ -293,6 +293,9 @@ describe('AWS S3 multupart copy client unit tests', function () {
 
             let expected_abortMultipartUpload_error = new Error('Abort procedure passed but copy parts were not removed');
             expected_abortMultipartUpload_error.details = { Parts: ['part 1', 'part 2'] }
+            const uploadPartCopyStubResponse = await testData.uploadPartCopyStub_positive_response.promise();
+            const error = new Error('Abort procedure passed but copy parts were not removed');
+            error.details = { Parts: ['part 1', 'part 2'] };
 
             return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
@@ -302,12 +305,12 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(loggerInfoSpy.callCount).equal(4)
                     should(loggerInfoSpy.args[3][0]).eql({
                         msg: 'copied all parts successfully: ' +
-                        [testData.uploadPartCopyStub_positive_response, testData.uploadPartCopyStub_positive_response].toString(),
+                        JSON.stringify([uploadPartCopyStubResponse, uploadPartCopyStubResponse]),
                         context: 'request_context'
                     });
                     should(loggerErrorSpy.calledTwice).equal(true);
                     should(loggerErrorSpy.args[0][0]).eql({ msg: 'Multipart upload failed', context: 'request_context', error: 'test_error' });
-                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed, copy parts were not removed', context: 'request_context', parts_list: { Parts: ['part 1', 'part 2'] } });
+                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed, copy parts were not removed: ' + JSON.stringify({ Parts: ['part 1', 'part 2'] }), context: 'request_context', error });
                     should(createMultipartUploadStub.calledOnce).equal(true);
                     should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
                     should(uploadPartCopyStub.calledTwice).equal(true);
@@ -323,11 +326,12 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should call abortMultipartCopy upon error from completeMultipartUpload and fail due to abortMultipartCopy error', function () {
+        it('Should call abortMultipartCopy upon error from completeMultipartUpload and fail due to abortMultipartCopy error', async function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.all_stubs_error_response);
             abortMultipartUploadStub.returns(testData.all_stubs_error_response);
+            const uploadPartCopyStubResponse = await testData.uploadPartCopyStub_positive_response.promise();
 
             return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
@@ -337,7 +341,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(loggerInfoSpy.callCount).equal(4)
                     should(loggerInfoSpy.args[3][0]).eql({
                         msg: 'copied all parts successfully: ' +
-                        [testData.uploadPartCopyStub_positive_response, testData.uploadPartCopyStub_positive_response].toString(),
+                        JSON.stringify([uploadPartCopyStubResponse, uploadPartCopyStubResponse]),
                         context: 'request_context'
                     });
                     should(loggerErrorSpy.calledTwice).equal(true);
@@ -356,12 +360,13 @@ describe('AWS S3 multupart copy client unit tests', function () {
                 })
         });
 
-        it('Should call abortMultipartCopy upon error from completeMultipartUpload and fail due to listParts error', function () {
+        it('Should call abortMultipartCopy upon error from completeMultipartUpload and fail due to listParts error', async function () {
             createMultipartUploadStub.returns(testData.createMultipartUploadStub_positive_response);
             uploadPartCopyStub.returns(testData.uploadPartCopyStub_positive_response);
             completeMultipartUploadStub.returns(testData.all_stubs_error_response);
             abortMultipartUploadStub.returns(testData.abortMultipartUploadStub_positive_response);
             listPartsStub.returns(testData.all_stubs_error_response);
+            const uploadPartCopyStubResponse = await testData.uploadPartCopyStub_positive_response.promise();
 
             return s3Module.copyObjectMultipart(testData.full_request_options, testData.request_context)
                 .then(() => {
@@ -371,7 +376,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     should(loggerInfoSpy.callCount).equal(4)
                     should(loggerInfoSpy.args[3][0]).eql({
                         msg: 'copied all parts successfully: ' +
-                        [testData.uploadPartCopyStub_positive_response, testData.uploadPartCopyStub_positive_response].toString(),
+                        JSON.stringify([uploadPartCopyStubResponse, uploadPartCopyStubResponse]),
                         context: 'request_context'
                     });
                     should(loggerErrorSpy.calledTwice).equal(true);
