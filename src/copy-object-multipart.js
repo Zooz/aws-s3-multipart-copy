@@ -40,7 +40,7 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
 
     return Promise.all(copyPartFunctionsArray)
         .then((copy_results) => {
-            logger.info({ msg: 'copied all parts successfully: ' + copy_results.toString(), context: request_context });
+            logger.info({ msg: 'copied all parts successfully: ' + JSON.stringify(copy_results), context: request_context });
 
             const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
             return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
@@ -86,11 +86,11 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
 
     return s3.uploadPartCopy(params).promise()
         .then((result) => {
-            logger.info(`CopyPart ${part_number} succeeded: ${JSON.stringify(result)}`);
+            logger.info({ msg: `CopyPart ${part_number} succeeded: ${JSON.stringify(result)}` });
             return Promise.resolve(result);
         })
         .catch((err) => {
-            logger.error(`CopyPart ${part_number} Failed: ${JSON.stringify(err)}`);
+            logger.error({ msg: `CopyPart ${part_number} Failed: ${JSON.stringify(err)}`, error: err });
             return Promise.reject(err);
         })
 }
@@ -113,10 +113,10 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
         })
         .then((parts_list) => {
             if (parts_list.Parts.length > 0) {
-                logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, parts_list: parts_list });
-
                 const err = new Error('Abort procedure passed but copy parts were not removed');
                 err.details = parts_list;
+
+                logger.error({ msg: 'abort multipart copy failed, copy parts were not removed: ', + JSON.stringify(parts_list), context: request_context, error: err });
 
                 return Promise.reject(err);
             } else {
