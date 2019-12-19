@@ -37,8 +37,8 @@
     "report-dir": "coverage"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
-    "snyk": "^1.190.0"
+    "lodash": "^4.17.15",
+    "snyk": "^1.263.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.192.0",
@@ -46,7 +46,7 @@
     "coveralls": "^3.0.2",
     "deepcopy": "^0.6.3",
     "mocha": "^4.1.0",
-    "nyc": "^13.2.0",
+    "nyc": "^14.1.1",
     "pkginfo": "^0.4.1",
     "rewire": "^3.0.2",
     "should": "^13.2.1",
