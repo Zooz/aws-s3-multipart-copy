@@ -116,7 +116,7 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
                 const err = new Error('Abort procedure passed but copy parts were not removed');
                 err.details = parts_list;
 
-                logger.error({ msg: `abort multipart copy failed, copy parts were not removed: ${JSON.stringify(parts_list)}`, context: request_context, error: err });
+                logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, error: err });
 
                 return Promise.reject(err);
             } else {

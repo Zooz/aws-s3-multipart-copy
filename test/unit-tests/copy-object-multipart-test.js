@@ -310,7 +310,7 @@ describe('AWS S3 multupart copy client unit tests', function () {
                     });
                     should(loggerErrorSpy.calledTwice).equal(true);
                     should(loggerErrorSpy.args[0][0]).eql({ msg: 'Multipart upload failed', context: 'request_context', error: 'test_error' });
-                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed, copy parts were not removed: ' + JSON.stringify({ Parts: ['part 1', 'part 2'] }), context: 'request_context', error });
+                    should(loggerErrorSpy.args[1][0]).eql({ msg: 'abort multipart copy failed, copy parts were not removed', context: 'request_context', error });
                     should(createMultipartUploadStub.calledOnce).equal(true);
                     should(createMultipartUploadStub.args[0][0]).eql(testData.expected_createMultipartUpload_args);
                     should(uploadPartCopyStub.calledTwice).equal(true);
