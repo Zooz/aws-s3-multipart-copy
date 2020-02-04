@@ -21,6 +21,7 @@ module.exports = {
         expiration_period: 100000,
         server_side_encryption: 'AES256',
         content_type: 'application/json',
+        content_disposition: 'filename="copied_object_name.json"',
         metadata: { 'some-key': 'some-value' },
         cache_control: 'max-age=60'
     },
@@ -38,6 +39,7 @@ module.exports = {
         Expires: 100000,
         ServerSideEncryption: 'AES256',
         ContentType: 'application/json',
+        ContentDisposition: 'filename="copied_object_name.json"',
         CacheControl: 'max-age=60',
         Metadata: {
             'some-key': 'some-value'
