@@ -8,9 +8,10 @@ const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
 
 let s3, logger;
 
-const init = function (aws_s3_object, initialized_logger) {
+const init = function (aws_s3_object, initialized_logger, simple_log) {
     s3 = aws_s3_object;
     logger = initialized_logger;
+    logger.simple_log = simple_log ? true : false;
 
     if (!_.get(s3, '__proto__.api.fullName') || !(s3.__proto__.api.fullName === 'Amazon Simple Storage Service')) {
         throw new Error('Invalid AWS.S3 object received');
@@ -40,7 +41,11 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
 
     return Promise.all(copyPartFunctionsArray)
         .then((copy_results) => {
-            logger.info({ msg: `copied all parts successfully: ${JSON.stringify(copy_results)}`, context: request_context });
+            if (!logger.simple_log){
+                logger.info({ msg: `copied all parts successfully: ${JSON.stringify(copy_results)}`, context: request_context });
+            } else {
+                logger.info(`copied all parts successfully: ${JSON.stringify(copy_results)}, context: ${request_context}`);
+            }
 
             const copyResultsForCopyCompletion = prepareResultsForCopyCompletion(copy_results);
             return completeMultipartCopy(destination_bucket, copyResultsForCopyCompletion, copied_object_name, upload_id, request_context);
@@ -67,11 +72,19 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
 
     return s3.createMultipartUpload(params).promise()
         .then((result) => {
-            logger.info({ msg: `multipart copy initiated successfully: ${JSON.stringify(result)}`, context: request_context });
+            if (!logger.simple_log){
+                logger.info({ msg: `multipart copy initiated successfully: ${JSON.stringify(result)}`, context: request_context });
+            } else{
+                logger.info(`multipart copy initiated successfully: ${JSON.stringify(result)}, context: ${request_context} `);
+            }
             return Promise.resolve(result.UploadId);
         })
         .catch((err) => {
-            logger.error({ msg: 'multipart copy failed to initiate', context: request_context, error: err });
+            if (!logger.simple_log){
+                logger.error({ msg: 'multipart copy failed to initiate', context: request_context, error: err });
+            } else {
+                logger.error(`multipart copy failed to initiate', context: ${request_context}, error: ${err.msg}`);
+            }
             return Promise.reject(err);
         });
 }
@@ -89,11 +102,19 @@ function copyPart(source_bucket, destination_bucket, part_number, object_key, pa
 
     return s3.uploadPartCopy(params).promise()
         .then((result) => {
-            logger.info({ msg: `CopyPart ${part_number} succeeded: ${JSON.stringify(result)}` });
+            if (!logger.simple_log){
+                logger.info({ msg: `CopyPart ${part_number} succeeded: ${JSON.stringify(result)}` });
+            } else {
+                logger.info(`CopyPart ${part_number} succeeded: ${JSON.stringify(result)}`);
+            }
             return Promise.resolve(result);
         })
         .catch((err) => {
-            logger.error({ msg: `CopyPart ${part_number} Failed: ${JSON.stringify(err)}`, error: err });
+            if (!logger.simple_log){
+                logger.error({ msg: `CopyPart ${part_number} Failed: ${JSON.stringify(err)}`, error: err });
+            } else {
+                logger.error(`CopyPart ${part_number} Failed: ${JSON.stringify(err)}, error: ${err.msg}`);
+            }
             return Promise.reject(err);
         })
 }
@@ -110,7 +131,11 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
             return s3.listParts(params).promise()
         })
         .catch((err) => {
-            logger.error({ msg: 'abort multipart copy failed', context: request_context, error: err });
+            if (!logger.simple_log){
+                logger.error({ msg: 'abort multipart copy failed', context: request_context, error: err });
+            } else {
+                logger.error(`abort multipart copy failed, context: ${request_context}, error: ${err.msg}`);
+            }
 
             return Promise.reject(err);
         })
@@ -118,12 +143,20 @@ function abortMultipartCopy(destination_bucket, copied_object_name, upload_id, r
             if (parts_list.Parts.length > 0) {
                 const err = new Error('Abort procedure passed but copy parts were not removed');
                 err.details = parts_list;
-
-                logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, error: err });
+                
+                if (!logger.simple_log){
+                    logger.error({ msg: 'abort multipart copy failed, copy parts were not removed', context: request_context, error: err });
+                } else {
+                    logger.error(`abort multipart copy failed, copy parts were not removed, context: ${request_context}, error: ${err.msg}`);
+                }
 
                 return Promise.reject(err);
             } else {
-                logger.info({ msg: `multipart copy aborted successfully: ${JSON.stringify(parts_list)}`, context: request_context });
+                if (!logger.simple_log){
+                    logger.info({ msg: `multipart copy aborted successfully: ${JSON.stringify(parts_list)}`, context: request_context });
+                } else {
+                    logger.info(`multipart copy aborted successfully: ${JSON.stringify(parts_list)}, context: ${request_context}`);
+                }
 
                 const err = new Error('multipart copy aborted');
                 err.details = params;
@@ -145,11 +178,19 @@ function completeMultipartCopy(destination_bucket, ETags_array, copied_object_na
 
     return s3.completeMultipartUpload(params).promise()
         .then((result) => {
-            logger.info({ msg: `multipart copy completed successfully: ${JSON.stringify(result)}`, context: request_context });
+            if (!logger.simple_log){
+                logger.info({ msg: `multipart copy completed successfully: ${JSON.stringify(result)}`, context: request_context });
+            } else {
+                logger.info(`multipart copy completed successfully: ${JSON.stringify(result)}, context: ${request_context}`);
+            }
             return Promise.resolve(result);
         })
         .catch((err) => {
-            logger.error({ msg: 'Multipart upload failed', context: request_context, error: err });
+            if (!logger.simple_log){
+                logger.error({ msg: 'Multipart upload failed', context: request_context, error: err });
+            } else {
+                logger.error(`Multipart upload failed, context: ${request_context}, error: ${err.msg}`);
+            }
             return Promise.reject(err);
         });
 }
