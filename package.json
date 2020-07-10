@@ -37,7 +37,7 @@
     "report-dir": "coverage"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.16",
     "snyk": "^1.290.1"
   },
   "devDependencies": {
