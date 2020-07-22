@@ -1,6 +1,6 @@
 {
   "name": "aws-s3-multipart-copy",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "This node js package provides a simple usage for multipart copying between buckets in aws-s3 via the official aws-sdk. It manages the 3 steps required for multipart copy including byte-range offsetting and parts order.",
   "main": "index.js",
   "scripts": {
