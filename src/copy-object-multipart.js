@@ -1,7 +1,4 @@
 'use strict';
-
-const _ = require('lodash');
-
 const COPY_PART_SIZE_MINIMUM_BYTES = 5242880; // 5MB in bytes
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
@@ -12,14 +9,10 @@ const init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
-    if (!_.get(s3, '__proto__.api.fullName') || !(s3.__proto__.api.fullName === 'Amazon Simple Storage Service')) {
-        throw new Error('Invalid AWS.S3 object received');
+    if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
+        logger.info({ msg: 'S3 client initialized successfully' });
     } else {
-        if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
-            logger.info({ msg: 'S3 client initialized successfully' });
-        } else {
-            throw new Error('Invalid logger object received');
-        }
+        throw new Error('Invalid logger object received');
     }
 };
 
