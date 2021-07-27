@@ -1,45 +1,19 @@
 {
   "name": "aws-s3-multipart-copy",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "This node js package provides a simple usage for multipart copying between buckets in aws-s3 via the official aws-sdk. It manages the 3 steps required for multipart copy including byte-range offsetting and parts order.",
   "main": "index.js",
-  "scripts": {
-    "test": "nyc mocha ./test/unit-tests --recursive",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zooz/aws-s3-multipart-copy.git"
   },
   "author": "Liad Berko",
-  "license": "Apache 2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Zooz/aws-s3-multipart-copy.git/issues"
   },
   "homepage": "https://github.com/Zooz/aws-s3-multipart-copy.git#readme",
-  "nyc": {
-    "check-coverage": true,
-    "lines": 98,
-    "include": [
-      "src"
-    ],
-    "exclude": [
-      "index.js"
-    ],
-    "reporter": [
-      "text",
-      "html"
-    ],
-    "cache": true,
-    "all": true,
-    "report-dir": "coverage"
-  },
-  "dependencies": {
-    "lodash": "^4.17.15",
-    "snyk": "^1.316.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "aws-sdk": "^2.192.0",
     "bunyan": "^1.8.12",
@@ -51,6 +25,5 @@
     "rewire": "^3.0.2",
     "should": "^13.2.1",
     "sinon": "^4.3.0"
-  },
-  "snyk": true
+  }
 }

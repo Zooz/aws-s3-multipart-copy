@@ -1,7 +1,4 @@
 'use strict';
-
-const _ = require('lodash');
-
 const COPY_PART_SIZE_MINIMUM_BYTES = 5242880; // 5MB in bytes
 const DEFAULT_COPY_PART_SIZE_BYTES = 50000000; // 50 MB in bytes
 const DEFAULT_COPIED_OBJECT_PERMISSIONS = 'private';
@@ -12,14 +9,10 @@ const init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
-    if (!_.get(s3, '__proto__.api.fullName') || !(s3.__proto__.api.fullName === 'Amazon Simple Storage Service')) {
-        throw new Error('Invalid AWS.S3 object received');
+    if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
+        logger.info({ msg: 'S3 client initialized successfully' });
     } else {
-        if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
-            logger.info({ msg: 'S3 client initialized successfully' });
-        } else {
-            throw new Error('Invalid logger object received');
-        }
+        throw new Error('Invalid logger object received');
     }
 };
 
@@ -29,8 +22,12 @@ const init = function (aws_s3_object, initialized_logger) {
  * (note that copy_part_size_bytes, copied_object_permissions, expiration_period are optional and will be assigned with default values if not given)
  * @param {*} request_context optional parameter for logging purposes
  */
-const copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period, server_side_encryption, content_type, content_disposition, content_encoding, content_language, metadata, cache_control }, request_context) {
-    const upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption, content_type, content_disposition,  content_encoding, content_language, metadata, cache_control);
+const copyObjectMultipart = async function ({ source_bucket, object_key, destination_bucket, copied_object_name, object_size, copy_part_size_bytes, copied_object_permissions, expiration_period, server_side_encryption, content_type, content_disposition, content_encoding, content_language, metadata, cache_control, storage_class }, request_context) {
+    if (object_size < COPY_PART_SIZE_MINIMUM_BYTES) {
+        throw new Error("Multipart copy only works with files at least 5MB in size. Use s3.copyObject instead")
+    }
+    
+    const upload_id = await initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption, content_type, content_disposition,  content_encoding, content_language, metadata, cache_control, storage_class);
     const partitionsRangeArray = calculatePartitionsRangeArray(object_size, copy_part_size_bytes);
     const copyPartFunctionsArray = [];
 
@@ -50,7 +47,7 @@ const copyObjectMultipart = async function ({ source_bucket, object_key, destina
         });
 };
 
-function initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption, content_type, content_disposition, content_encoding, content_language, metadata, cache_control) {
+function initiateMultipartCopy(destination_bucket, copied_object_name, copied_object_permissions, expiration_period, request_context, server_side_encryption, content_type, content_disposition, content_encoding, content_language, metadata, cache_control, storage_class) {
     const params = {
         Bucket: destination_bucket,
         Key: copied_object_name,
@@ -64,6 +61,7 @@ function initiateMultipartCopy(destination_bucket, copied_object_name, copied_ob
     metadata ? params.Metadata = metadata : null;
     cache_control ? params.CacheControl = cache_control : null;
     server_side_encryption ? params.ServerSideEncryption = server_side_encryption : null;
+    storage_class ? params.StorageClass = storage_class : null;
 
     return s3.createMultipartUpload(params).promise()
         .then((result) => {
