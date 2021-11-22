@@ -80,6 +80,7 @@ The method receives two parameters: options and request_context
     - content_type: String (optional) A standard MIME type describing the format of the object data
     - metadata: Object (optional) - A map of metadata to store with the object in S3
     - cache_control: String (optional) - Specifies caching behavior along the request/reply chain
+    - sse_mks_key_id: String(optional) - Specifies the ARN of the KMS key to be used for file encryption (server_side_encryption must be "aws:kms")
 - request_context: String (optional) - this parameter will be logged in every log message, if not passed it will remain undefined.
 
 ### Response
