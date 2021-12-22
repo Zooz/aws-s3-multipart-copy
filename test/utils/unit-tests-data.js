@@ -25,7 +25,8 @@ module.exports = {
         content_encoding: 'gzip',
         content_language: 'en-US',
         metadata: { 'some-key': 'some-value' },
-        cache_control: 'max-age=60'
+        cache_control: 'max-age=60',
+        storage_class: 'STANDARD'
     },
     partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period,  no server_side_encryption, no content_type
         source_bucket: 'source_bucket',
@@ -47,7 +48,8 @@ module.exports = {
         CacheControl: 'max-age=60',
         Metadata: {
             'some-key': 'some-value'
-        }
+        },
+        StorageClass: 'STANDARD'
     },
     expected_uploadPartCopy_firstCallArgs: {
         Bucket: 'destination_bucket',
