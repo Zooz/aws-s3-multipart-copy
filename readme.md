@@ -25,10 +25,14 @@ npm install aws-s3-multipart-copy
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <!--**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*-->
 
-- [init](#init)
-- [copyObjectMultipart](#copyobjectmultipart)
+- [aws-s3-multipart-copy](#aws-s3-multipart-copy)
+  - [Installing](#installing)
+  - [init](#init)
+    - [Example](#example)
+  - [copyObjectMultipart](#copyobjectmultipart)
     - [Request parameters](#request-parameters)
     - [Response](#response)
+    - [Example](#example-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -80,6 +84,7 @@ The method receives two parameters: options and request_context
     - content_type: String (optional) A standard MIME type describing the format of the object data
     - metadata: Object (optional) - A map of metadata to store with the object in S3
     - cache_control: String (optional) - Specifies caching behavior along the request/reply chain
+    - storage_class: String (optional) - Specifies the storage class for the copied object. The valid values are specified in the [aws s3 docs](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html#AmazonS3-CreateMultipartUpload-request-header-StorageClass). When unset, the class will be 'STANDARD'
 - request_context: String (optional) - this parameter will be logged in every log message, if not passed it will remain undefined.
 
 ### Response
@@ -116,7 +121,8 @@ let options = {
         object_size: 70000000,
         copy_part_size_bytes: 50000000,
         copied_object_permissions: 'bucket-owner-full-control',
-        expiration_period: 100000
+        expiration_period: 100000,
+        storage_class: 'STANDARD'
     };
 
     return s3Module.copyObjectMultipart(options, request_context)
@@ -149,7 +155,8 @@ let options = {
         object_size: 70000000,
         copy_part_size_bytes: 50000000,
         copied_object_permissions: 'bucket-owner-full-control',
-        expiration_period: 100000
+        expiration_period: 100000,
+        storage_class: 'STANDARD'
     };
 
     return s3Module.copyObjectMultipart(options, request_context)
@@ -180,7 +187,8 @@ let options = {
         object_size: 70000000,
         copy_part_size_bytes: 50000000,
         copied_object_permissions: 'bucket-owner-full-control',
-        expiration_period: 100000
+        expiration_period: 100000,
+        storage_class: 'STANDARD'
     };
 
     return s3Module.copyObjectMultipart(options, request_context)
