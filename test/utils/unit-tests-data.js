@@ -26,9 +26,10 @@ module.exports = {
         content_language: 'en-US',
         metadata: { 'some-key': 'some-value' },
         cache_control: 'max-age=60',
+        sse_mks_key_id: 'sse-key-arn',
         storage_class: 'STANDARD'
     },
-    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period,  no server_side_encryption, no content_type
+    partial_request_options: { // no copy_part_size_bytes, no copied_object_permissions, no expiration_period,  no server_side_encryption, no content_type, no sse_mks_key_id
         source_bucket: 'source_bucket',
         object_key: 'object_key',
         destination_bucket: 'destination_bucket',
@@ -49,6 +50,7 @@ module.exports = {
         Metadata: {
             'some-key': 'some-value'
         },
+        SSEKMSKeyId: 'sse-key-arn',
         StorageClass: 'STANDARD'
     },
     expected_uploadPartCopy_firstCallArgs: {

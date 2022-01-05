@@ -84,6 +84,7 @@ The method receives two parameters: options and request_context
     - content_type: String (optional) A standard MIME type describing the format of the object data
     - metadata: Object (optional) - A map of metadata to store with the object in S3
     - cache_control: String (optional) - Specifies caching behavior along the request/reply chain
+    - sse_mks_key_id: String(optional) - Specifies the ARN of the KMS key to be used for file encryption (server_side_encryption must be "aws:kms")
     - storage_class: String (optional) - Specifies the storage class for the copied object. The valid values are specified in the [aws s3 docs](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html#AmazonS3-CreateMultipartUpload-request-header-StorageClass). When unset, the class will be 'STANDARD'
 - request_context: String (optional) - this parameter will be logged in every log message, if not passed it will remain undefined.
 

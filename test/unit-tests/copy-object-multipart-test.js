@@ -20,7 +20,7 @@ let bunyan = require('bunyan'),
 
 let sandBox, loggerInfoSpy, loggerErrorSpy, createMultipartUploadStub, uploadPartCopyStub, completeMultipartUploadStub, abortMultipartUploadStub, listPartsStub, s3;
 
-describe('AWS S3 multupart copy client unit tests', function () {
+describe('AWS S3 multipart copy client unit tests', function () {
     before(() => {
         sandBox = sinon.sandbox.create();
         loggerInfoSpy = sandBox.spy(logger, 'info');
