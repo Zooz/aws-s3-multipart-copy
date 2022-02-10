@@ -66,8 +66,6 @@ s3Module.init(s3, logger);
 After module is initialized, the copyObjectMultipart functionality is ready for usage.
 copyObjectMultipart returns a promise and can only copy (and not upload) objects from bucket to bucket.
 
-** Objects size for multipart copy must be at least 5MB. 
-
 The method receives two parameters: options and request_context
 
 ### Request parameters
