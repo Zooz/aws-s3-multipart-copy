@@ -172,7 +172,7 @@ function calculatePartitionsRangeArray(object_size, copy_part_size_bytes) {
         partitions.push(partition);
     }
 
-    if (remainder >= COPY_PART_SIZE_MINIMUM_BYTES) {
+    if (numOfPartitions == 0 || remainder >= COPY_PART_SIZE_MINIMUM_BYTES) {
         partition = (index * copy_part_size) + '-' + (index * copy_part_size + remainder - 1);
         partitions.push(partition);
     }
