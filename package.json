@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.15",
-    "snyk": "^1.316.1"
+    "snyk": "^1.324.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.192.0",
