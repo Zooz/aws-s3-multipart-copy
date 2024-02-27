@@ -90,44 +90,27 @@ module.exports = {
 
     // stubs responses
     uploadPartCopyStub_positive_response: {
-        promise: function () {
-            return Promise.resolve({
-                CopyPartResult: {
-                    LastModified: 'LastModified',
-                    ETag: '1a1b2s3d2f1e2g3sfsgdsg'
-                }
-            })
+        CopyPartResult: {
+            LastModified: 'LastModified',
+            ETag: '1a1b2s3d2f1e2g3sfsgdsg'
         }
     },
     createMultipartUploadStub_positive_response: {
-        promise: function () {
-            return Promise.resolve({ UploadId: '1a2b3c4d' })
-        }
+        UploadId: '1a2b3c4d' 
     },
     completeMultipartUploadStub_positive_response: {
-        promise: function () {
-            return Promise.resolve();
-        }
+        undefined
     },
-    all_stubs_error_response: {
-        promise: function () {
-            return Promise.reject('test_error');
-        }
-    },
+    all_stubs_error_response: 
+        new Error('test_error'),
     abortMultipartUploadStub_positive_response: {
-        promise: function () {
-            return Promise.resolve({});
-        }
+        undefined
     },
     listPartsStub_positive_response: {
-        promise: function () {
-            return Promise.resolve({ Parts: [] })
-        }
+        Parts: [] 
     },
     listPartsStub_negative_response: {
-        promise: function () {
-            return Promise.resolve({ Parts: ['part 1', 'part 2'] })
-        }
+        Parts: ['part 1', 'part 2']
     },
     expected_abort_rejection_response: expected_abortMultipartUpload_error
 }

@@ -37,11 +37,11 @@
     "report-dir": "coverage"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
+    "@aws-sdk/client-s3": "^3.521.0",
     "snyk": "^1.316.1"
   },
   "devDependencies": {
-    "aws-sdk": "^2.192.0",
+    "aws-sdk-client-mock": "^3.0.1",
     "bunyan": "^1.8.12",
     "coveralls": "^3.0.2",
     "deepcopy": "^0.6.3",
