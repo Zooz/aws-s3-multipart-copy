@@ -17,7 +17,7 @@ const init = function (aws_s3_object, initialized_logger) {
     s3 = aws_s3_object;
     logger = initialized_logger;
 
-    if ( s3 === undefined || !s3.constructor.name == 'S3Client') {
+    if ( s3 === undefined || s3.constructor.name !== 'S3Client') {
         throw new Error('Invalid AWS.S3 object received');
     } else {
         if (logger && typeof logger.info === 'function' && typeof logger.error === 'function') {
